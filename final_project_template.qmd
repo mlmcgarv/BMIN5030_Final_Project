@@ -1,0 +1,2480 @@
+---
+title: "Temporal Trends in Philadelphia Mortality: The Impact of COVID-19, the Opioid Crisis, and Harm-Reduction Interventions, 2012–Present
+subtitle: "BMIN5030 Final Project"
+author: "Michael McGarvey"
+format: html
+editor: visual
+number-sections: true
+embed-resources: true
+---
+
+------------------------------------------------------------------------
+
+How to push: git add . then git commit -m "my message" then git push ( This always should be in front: brb-05784:Final-Project-BMIN michaelmcgarvey\$
+
+## Overview {#sec-overview}
+
+Give a brief a description of your project and its goal(s), what data you are using to complete it, and what two faculty/staff in different fields you have spoken to about your project with a brief summary of what you learned from each person. Include a link to your final project GitHub repository.
+
+This project investigates how Philadelphia’s mortality patterns have been shaped by two overlapping public health emergencies: the COVID-19 pandemic and the opioid crisis. Using cause-specific mortality data from 2012–2024, contextual metrics on COVID-19 pandemic onset, vaccination data, and the Introduction of fentanyl into the opioid supply and naloxone distribution, the study quantifies excess deaths. It evaluates the impact of these events and interventions across demographic groups.
+
+Faculty guidance has further refined the project’s direction: Dr. Do emphasized the importance of hypothesis-driven analysis, encouraging the development and iterative refinement of testable questions, while Dr. Damrauer proposed framing the project as a natural experiment—examining not only the onset of the crises but also the timing and impact of key interventions such as vaccine rollout and Narcan availability. Their insights underscore the importance of modeling how mortality trends respond to policy shifts and to differences in resource distribution, particularly across age, race, and gender.
+
+The full project, including code and documentation, is available in my <https://github.com/mlmcgarv/Final-Project-BMIN.git>
+
+## Introduction {#sec-introduction}
+
+Describe the problem addressed, its significance, and some background to motivate the problem. This should extend what is in the @sec-overview.Explain why your problem is interdisciplinary, what fields can contribute to its understanding, and incorporate background related to what you learned from meeting with faculty/staff.
+
+Philadelphia has experienced significant shifts in mortality patterns over the past decade, shaped by two overlapping public health emergencies: the COVID-19 pandemic and the opioid crisis. Mortality rates and causes changed during the initial years of the pandemic after 2020 and shifted again following 2014, when the potent synthetic opioid, fentanyl, began appearing in drug samples and overdose victims. A question of this project is whether these shifts in mortality reflect or intensify pre-existing disparities across age, race, and gender.
+
+In response, the city launched targeted interventions to reduce mortality and mitigate harm. These included widespread COVID-19 vaccination beginning in late 2020 and expanded naloxone (Narcan) distribution, marked by key milestones: citywide distribution to first responders and community organizations in 2017, the installation of free Narcan vending machines in 2022, and over-the-counter availability in 2023. This project seeks to quantify changes in cause-specific mortality rates from 2012 onward and assess the extent to which these interventions influenced excess deaths.
+
+The complexity of this problem demands an interdisciplinary approach. Public health and epidemiology provide frameworks for understanding disease burden and intervention strategies, biostatistics and informatics supply the tools to analyze large-scale mortality datasets, and social science highlights how structural inequities shape vulnerability to both infectious disease and substance use.
+
+Faculty guidance from the informatics department further refined the project’s direction. Dr. Do emphasized the importance of hypothesis-driven analysis, encouraging the development and iterative refinement of testable questions. In response, I created a set of hypotheses examining how mortality trends shifted with the onset of crises and the rollout of interventions. Dr. Damrauer reinforced this approach by proposing that the project be framed as a natural experiment—analyzing not only the onset of COVID-19 and the introduction of fentanyl, but also the timing and impact of vaccine availability and naloxone distribution. Their insights underscore the importance of modeling how mortality trends respond to policy shifts and to differences in resource distribution, particularly across age, race, and gender.
+
+## Methods {#sec-methods}
+
+Describe the data used and general methodological approach used to address the problem described in the @sec-introduction. Subsequently, incorporate full R code necessary to retrieve and clean data, and perform analysis. Be sure to include a description of code so that others (including your future self) can understand what you are doing and why.
+
+**Data Sources** This project draws on the *Philadelphia Vital Statistics mortality database* (2012–2024), which provides annual, aggregated mortality data for Philadelphia County. Each record summarizes deaths by cause, demographic group, and metric type. Key fields include year, sex, race/ethnicity, age categories, leading cause of death, and mortality metrics such as counts, age‑adjusted rates per 100,000, and life expectancy. Records flagged as unreliable (\<20 deaths) were retained to preserve temporal trends, while suppressed values (\<10 deaths) were excluded to ensure data quality.
+
+To contextualize mortality patterns, additional datasets were merged with the Vital Statistics database. These included annual COVID‑19 vaccination coverage (2020–present), naloxone (Narcan) distribution milestones (2017 citywide rollout, 2022 vending machines, 2023 over‑the‑counter availability), and critical inflection points such as the emergence of fentanyl in the drug supply (2014) and the onset of the COVID‑19 pandemic (2020). These contextual variables provide anchors for evaluating how crises and interventions shaped mortality trajectories.
+
+**Load required R packages for data import, cleaning, and analysis**
+
+**Data Cleaning and Structuring** Data preparation involved several steps. Unused columns such as *geography_name*, *geography*, and *estimate_type* were removed to streamline the dataset. Suppressed values (metric_value == -99999 or quality_flag == "suppressed") were excluded, while records flagged as “unreliable” were retained to preserve long‑term patterns. Demographic categories were standardized to ensure consistency across years. Finally, contextual datasets on vaccination coverage, naloxone milestones, fentanyl introduction, and pandemic onset were merged with mortality records to create a unified analytic dataset.
+
+**Analytical Approach** The analysis proceeded in five stages. First, total mortality summaries were calculated for Philadelphia by year, with contextual overlays marking fentanyl introduction, pandemic onset, and intervention milestones. Second, interrupted time‑series (ITS) regression models were used to estimate level and slope changes associated with critical inflection points (2014 fentanyl emergence, 2020 pandemic onset) and intervention years (vaccination rollout, naloxone milestones). Third, cause‑of‑death analysis was conducted through interactive plots of the top 10 causes of death by year, accompanied by tables highlighting rank and percent contributions of COVID‑19 and drug overdose mortality. Fourth, demographic analysis explored disparities across sex, race/ethnicity, and age groups, using regression models (linear, Poisson, negative binomial) to quantify associations between mortality counts, demographic indicators, and interventions. Finally, hypothesis testing was performed to evaluate mortality trends, intervention impacts, and interactions, with full hypotheses documented to guide analysis and interpretation.
+
+**Hypotheses**
+
+-   *Mortality Trends Hypotheses:* Overall mortality rates increased after the onset of COVID‑19 (2020); opioid‑related mortality rose sharply after fentanyl emergence (2014); COVID‑19 deaths disproportionately affected older age groups; opioid‑related deaths disproportionately affected males; Black and Hispanic populations experienced higher excess mortality during COVID‑19 than white populations.
+
+-   *Intervention Impact Hypotheses:* COVID‑19 mortality declined following vaccination rollout (late 2020 onward); opioid mortality declined after Narcan distribution to first responders (2017); free Narcan vending machines (2022) reduced overdose deaths; over‑the‑counter Narcan (2023) contributed to declines across demographic groups.
+
+-   *Interaction Hypotheses:* Effectiveness of vaccination varied by race, age, and gender; Narcan’s impact was greater in younger age groups; mortality disparities narrowed following interventions, suggesting improved equity.
+
+**Specific Aims** The overarching aim of this study is to evaluate how overlapping public health crises and subsequent interventions shaped mortality in Philadelphia between 2012 and 2024. Specifically, the analysis seeks to characterize annual trends in leading causes of death, calculate mortality counts and age‑standardized rates for major causes such as heart disease, cancer, overdose, and COVID‑19, and estimate the impact of crises on mortality trajectories. Interrupted time‑series regression is used to assess deviations in mortality patterns following the emergence of fentanyl in 2014 and the onset of the COVID‑19 pandemic in 2020. A further aim is to evaluate the moderating effects of interventions, including vaccination uptake and naloxone distribution, to determine whether these efforts reduced excess deaths and narrowed disparities across demographic groups. By integrating contextual data with mortality records, the study aims to provide a comprehensive assessment of how crises and interventions jointly influenced mortality trends in Philadelphia.
+
+------------------------------------------------------------------------
+
+**Data Preparation and Integration**
+
+**Loading Packages and Preparing Mortality Data:** To begin the analysis, I loaded the required R packages that support data wrangling, visualization, and statistical modeling. The *tidyverse* suite provided core tools for data manipulation and plotting, while packages such as *janitor*standardized column names, *readr* enabled efficient CSV import, and *MASS* supported negative binomial regression. Additional packages like *ggrepel* and *RColorBrewer* improved plot readability and accessibility, and *knitr* and *gt* were used to generate clean, publication‑ready tables.
+
+After setting up the environment, we imported the raw mortality dataset (*Vital_Mortality_Cty‑2.csv*), standardized its column names, and removed metadata fields not needed for analysis. Suppressed values (e.g., metric_value == ‑99999 or flagged as “suppressed”) were excluded, while unreliable records were retained to preserve long‑term trends. To avoid conflicts between packages, we explicitly called `dplyr::select` when dropping unused columns. Finally, we validated the import by checking column names and inspecting the dataset structure. These steps ensured that the dataset was tidy, consistent, and ready for downstream filtering, merging with contextual datasets, and modeling.
+
+```{r}
+
+# Load required packages
+
+library(tidyverse)     # Core toolkit: dplyr for wrangling, ggplot2 for visualization
+library(janitor)       # clean_names() for standardized, consistent column names
+library(readr)         # Fast, consistent CSV import
+library(broom)         # Tidies model outputs into data frames
+library(ggrepel)       # Improves readability of plot labels
+library(RColorBrewer)  # Accessible color palettes for plots
+library(MASS)          # Provides glm.nb() for Negative Binomial regression
+library(knitr)         # kable() for clean, simple tables in R Markdown/Quarto
+library(gt)            # gt() for polished, publication-ready tables
+library(stringr)       # str_detect() and other string functions for filtering predictors
+library(ggplot2)       # Explicitly loaded for forest plots (part of tidyverse, noted here)
+library(patchwork)
+
+# Import mortality data, clean names, drop metadata that I will not use, and filter suppressed values
+mortality <- read_csv("Vital_Mortality_Cty-2.csv", skip = 1, show_col_types = FALSE) %>%
+  clean_names() %>%
+  # Explicitly call dplyr::select to avoid masking errors from other packages
+  dplyr::select(-geography_name, -geography, -estimate_type) %>%
+  # Filter out suppressed or placeholder values
+  filter(
+    metric_value != -99999,
+    is.na(quality_flag) | quality_flag != "suppressed"
+  )
+
+# Quick validation of column names and structure
+names(mortality)
+glimpse(mortality)
+
+
+
+```
+
+**Preparation of Contextual Datasets**: In this step, two external contextual datasets—opioid interventions and COVID‑19 vaccination coverage—were prepared for integration with the mortality data. The primary goal was to standardize their schemas to ensure consistency across sources. For both datasets, the *year* column was converted to integer type to align with the mortality database and enable accurate joins. Because different versions of the source files stored notes under varying column names, a single, consistent notes column was enforced (*opioid_notes* for opioid interventions and *vax_notes* for vaccination coverage). This was achieved using `rename_with()` and `matches()` to harmonize column names in a compact, reproducible way. Safeguards were applied with `coalesce()` to guarantee that the notes column always exists, even if missing in the source file, thereby preventing downstream errors and maintaining transparency. Validation was performed by inspecting the dataset structure with `glimpse()` and confirming distinct years with `distinct(year)`. These steps ensured that both contextual datasets were tidy, consistent, and ready to be merged with the cleaned mortality data for subsequent analyses.
+
+```{r}
+
+# Contextual Datasets Incorporated
+
+# ---- Opioid crisis interventions ----
+opioid_interventions <- read_csv("intervention_data.csv", show_col_types = FALSE) %>%
+  clean_names() %>%
+  mutate(year = as.integer(year)) %>%   # ensure year is numeric for merging
+  # Standardize notes column across versions
+  rename_with(~ "opioid_notes", matches("opioid_crisis_notes_philadelphia|notes")) %>%
+  mutate(opioid_notes = coalesce(opioid_notes, NA_character_))
+
+# Validate structure
+glimpse(opioid_interventions)
+distinct(opioid_interventions, year)
+
+# ---- COVID-19 vaccination coverage ----
+covid_vax <- read_csv("covid_vaccine_data.csv", show_col_types = FALSE) %>%
+  clean_names() %>%
+  mutate(year = as.integer(year)) %>%   # ensure year is numeric for merging
+  # Standardize notes column across versions
+  rename_with(~ "vax_notes", matches("covid_vaccine_notes_philadelphia|notes")) %>%
+  mutate(vax_notes = coalesce(vax_notes, NA_character_))
+
+# Validate structure
+glimpse(covid_vax)
+distinct(covid_vax, year)
+
+
+```
+
+> ***Merging Mortality Data with Contextual Datasets:*** After cleaning and preparing the individual datasets, the next step was to merge the mortality records with contextual information on opioid interventions and COVID‑19 vaccination coverage. Defensive checks were applied to confirm that the *year* column was present in each dataset before merging, ensuring that joins would execute correctly. Using `left_join()` by year preserved all mortality observations while adding corresponding intervention and vaccination data where available. To prevent ambiguity in cases where datasets contained overlapping column names, explicit suffixes were applied during the joins, making the resulting variables easier to interpret in downstream analyses. Finally, the unified dataset was inspected with `glimpse()` to validate that the merges executed correctly and that the structure aligned with expectations. These refinements ensured that the merged dataset was both comprehensive and reliable, providing a solid foundation for subsequent analyses of mortality trends in relation to crises and interventions.
+
+```{r}
+# ---- Merge mortality data with opioid interventions by year ----
+
+# Defensive check: ensure 'year' exists in both datasets
+stopifnot("year" %in% names(mortality))
+stopifnot("year" %in% names(opioid_interventions))
+
+mortality_with_opioid <- mortality %>%
+  left_join(opioid_interventions, by = "year", suffix = c("", "_opioid"))
+
+# ---- Merge the result with COVID-19 vaccination coverage by year ----
+
+# Defensive check: ensure 'year' exists in vaccination dataset
+stopifnot("year" %in% names(covid_vax))
+
+mortality_full <- mortality_with_opioid %>%
+  left_join(covid_vax, by = "year", suffix = c("", "_vax"))
+
+# Preview the unified dataset to confirm joins worked correctly
+glimpse(mortality_full)
+
+
+
+```
+
+## Results
+
+**Mortality Summaries**
+
+> ***Annual Mortality Trends: Data Preparation and Visualization:*** To summarize overall mortality patterns, the unified dataset (*mortality_full*) was filtered to include only rows representing all causes of death across all sexes, races/ethnicities, and age groups. Restricting the metric to raw death counts ensured that each year was represented by a single, clean value reflecting total mortality in Philadelphia. The *year* column was standardized as an integer, and death counts were renamed as *total_deaths*. Only relevant columns were retained using `dplyr::select()` (explicitly called to avoid function conflicts), and duplicates were removed to guarantee one row per year. Sanity checks confirmed the filtering worked correctly, leaving a tidy table of annual death totals. Finally, a line plot with points was generated to visualize trends in total deaths over time. To improve readability, large values on the y‑axis were formatted with commas, and a consistent plotting theme was applied to maintain clarity across figures. This visualization provides a clear descriptive overview of mortality patterns and establishes a foundation for subsequent regression modeling.
+
+```{r}
+
+library(ggplot2)
+library(scales)   # for comma formatting
+
+# Filter to the single "All causes" row per year
+annual_totals <- mortality_full %>%
+  filter(
+    sex == "All sexes",                         
+    race_ethnicity == "All races/ethnicities",  
+    age_category == "All ages",                 
+    leading_cause_death == "All causes",        
+    metric_name == "count_of_deaths"            
+  ) %>%
+  mutate(year = as.integer(year)) %>%           
+  dplyr::select(year, total_deaths = metric_value) %>%  
+  distinct()                                    
+
+# Sanity checks
+annual_totals %>% count(year)                               
+annual_totals %>% add_count(year) %>% filter(n > 1)         
+
+# Plot total deaths per year with refinements
+ggplot(annual_totals, aes(x = year, y = total_deaths)) +
+  geom_line(color = "steelblue", size = 1.2) +
+  geom_point(color = "darkred", size = 2) +
+  labs(
+    title = "Total Deaths per Year in Philadelphia",
+    subtitle = "All causes, all ages, sexes, and races/ethnicities",
+    x = "Year",
+    y = "Total Deaths"
+  ) +
+  scale_y_continuous(labels = comma) +   # axis scaling for readability
+  theme_classic(base_size = 14)          # consistent theme across plots
+
+
+
+
+```
+
+***Mortality Trends with Intervention and Vaccine Milestones**:* Building on the annual mortality totals, a line chart was created to display total deaths per year in Philadelphia. Points were added to highlight each year’s value, and vertical dashed lines were layered to mark major public health interventions. Opioid‑related events — including the fentanyl surge (2014), Narcan distribution (2017), vending machine rollout (2022), and OTC Narcan availability (2023) — were each assigned distinct colors to differentiate their timing and impact. In contrast, COVID‑related milestones were consistently marked in blue for visual coherence.
+
+To enhance readability, the COVID onset year was labeled at the top of the plot, while vaccine rollout years were marked at the bottom with their actual dose counts. This design choice separates onset and rollout labels vertically, reducing clutter while still showing how both types of interventions align with mortality trends.
+
+The resulting visualization provides a context‑rich overview that integrates mortality patterns with opioid and COVID responses, offering a clear depiction of how these public health milestones intersect with annual death counts in Philadelphia.
+
+```{r}
+
+# Ensure dplyr verbs are used explicitly to avoid masking issues
+library(ggplot2)
+
+# Join vaccine dose counts into annual_totals (use dplyr::left_join and dplyr::select)
+annual_totals_with_vax <- annual_totals %>%
+  dplyr::left_join(
+    covid_vax %>% dplyr::select(year, covid_vaccine_doses_philadelphia),
+    by = "year"
+  )
+
+# Optional: quick check
+names(annual_totals_with_vax)
+
+ggplot(annual_totals_with_vax, aes(x = year, y = total_deaths)) +
+  # Base mortality trend
+  geom_line(color = "steelblue", size = 1.2) +
+  geom_point(color = "darkred", size = 2) +
+  
+  # Opioid intervention milestones (vertical dashed lines)
+  geom_vline(xintercept = 2014, linetype = "dashed", color = "red") +       # fentanyl surge
+  geom_vline(xintercept = 2017, linetype = "dashed", color = "purple") +    # Narcan distribution
+  geom_vline(xintercept = 2022, linetype = "dashed", color = "darkgreen") + # Narcan vending machines
+  geom_vline(xintercept = 2023, linetype = "dashed", color = "orange") +    # OTC Narcan
+  
+  # COVID onset marker
+  geom_vline(xintercept = covid_onset_year, linetype = "dashed", color = "blue") +
+  
+  # Labels for interventions
+  annotate("text", x = 2014, y = max(annual_totals_with_vax$total_deaths)*0.95,
+           label = "Fentanyl surge", angle = 90, vjust = -0.5, color = "red") +
+  annotate("text", x = 2017, y = max(annual_totals_with_vax$total_deaths)*0.95,
+           label = "Narcan distribution", angle = 90, vjust = -0.5, color = "purple") +
+  annotate("text", x = covid_onset_year, y = max(annual_totals_with_vax$total_deaths)*0.92,
+           label = paste("COVID onset (", covid_onset_year, ")", sep = ""),
+           angle = 90, vjust = -0.5, color = "blue") +
+  annotate("text", x = 2022, y = max(annual_totals_with_vax$total_deaths)*0.95,
+           label = "Narcan vending machines", angle = 90, vjust = -0.5, color = "darkgreen") +
+  annotate("text", x = 2023, y = max(annual_totals_with_vax$total_deaths)*0.95,
+           label = "OTC Narcan", angle = 90, vjust = -0.5, color = "orange") +
+  
+  # Vaccine dose labels at the bottom of the plot (only where counts exist)
+  geom_text(
+    data = annual_totals_with_vax %>% dplyr::filter(!is.na(covid_vaccine_doses_philadelphia)),
+    aes(
+      x = year,
+      y = min(annual_totals_with_vax$total_deaths) * 1.05,
+      label = paste0("Vaccines: ", covid_vaccine_doses_philadelphia)
+    ),
+    angle = 90, vjust = 1, color = "blue", inherit.aes = FALSE
+  ) +
+  
+  labs(
+    title = "Total Deaths per Year in Philadelphia",
+    subtitle = "All causes, all ages, sexes, and races/ethnicities\nIntervention milestones and vaccine dose counts marked",
+    x = "Year",
+    y = "Total Deaths"
+  ) +
+  theme_minimal()
+
+
+
+
+
+```
+
+### Interrupted Time Series Analysis of Mortality Trends in Philadelphia
+
+**Interrupted Time Series Analysis: What It Is and Why It Fits Here:** Interrupted Time Series (ITS) is a quasi‑experimental design used to evaluate the impact of interventions or events that occur at specific points in time. It models the underlying trend before an intervention, then tests whether there is a significant level change, such as an immediate jump or drop, or a slope change, such as an altered trajectory, after the intervention. ITS regression is the statistical implementation of this design, where dummy variables capture the interruption and interaction terms capture changes in slope. This approach is particularly well‑suited for public health and policy analysis, where randomized experiments are not feasible but interventions occur at identifiable moments. In this analysis, ITS is the right choice because we are evaluating population‑level mortality trends in relation to specific, well‑timed events such as the 2014 fentanyl emergence, the 2020 pandemic onset, and subsequent intervention years including vaccination rollout and naloxone milestones. By modeling both immediate and long‑term effects, ITS allows us to distinguish between sharp disruptions, like the onset of the pandemic, and gradual changes, like vaccination campaigns, providing a nuanced understanding of how interventions shaped mortality patterns.
+
+While the ITS regression provides valuable insights, several limitations should be acknowledged. Annual mortality data yields relatively few time points, limiting statistical power and making slope estimates sensitive to individual years. Because interventions occurred in close succession, such as the 2020 onset, 2021 vaccine rollout, and 2022 booster introduction, the dummy and slope terms are highly correlated, which can inflate standard errors, obscure independent effects, and lead to unstable coefficient estimates. Mortality trends may also be influenced by unmeasured confounders, including changes in healthcare access, opioid use patterns, socioeconomic conditions, or other public health initiatives. In addition, using annual totals masks within‑year variation, meaning seasonal spikes, short‑term surges, or rapid declines cannot be detected and the ITS model may oversimplify dynamic changes. Finally, ITS regression assumes linear pre‑ and post‑intervention trajectories, but real‑world mortality patterns may follow nonlinear paths, which could limit the accuracy of slope estimates. Taken together, these limitations suggest that while ITS is a powerful tool for detecting major disruptions, results should be interpreted cautiously. The findings highlight strong evidence of a COVID‑related mortality spike, but smaller vaccine effects may be harder to isolate given the constraints of the data and model.
+
+**Multiple COVID Interventions in ITS (Including Combined Vaccine Era):** In this step, we extended the Interrupted Time Series (ITS) framework to evaluate multiple COVID interventions. Annual mortality totals in Philadelphia were filtered to include all causes across sexes, races, and ages, and intervention years were defined as 2020 (COVID onset), 2021 (initial vaccine rollout), and 2022 (booster rollout). For each intervention, two variables were created: a dummy indicator to capture immediate level changes, and a slope variable to capture changes in trend after that year. In addition, we introduced a combined indicator (post_2021plus) that equals one for all years from 2021 onward, representing the broader “vaccine era.” This allowed us to estimate both milestone‑specific effects and the overall impact of sustained vaccine availability.
+
+The model fit was strong, with highly significant overall results. COVID onset in 2020 was associated with a large and highly significant immediate increase in deaths (≈ 4,766, p \< 0.001) followed by a significant negative slope (≈ –1,108, p \< 0.001), suggesting mortality spiked sharply but then declined. The 2021 vaccine rollout showed a modest negative level change (≈ –571, p ≈ 0.05, marginal), while the 2022 booster rollout had little measurable effect (≈ 156, p ≈ 0.59). The combined post‑2021 indicator captured the overall vaccine era effect, showing a sustained downward shift in mortality relative to pre‑COVID trends, though its independent contribution was difficult to isolate due to collinearity with the individual rollout and booster terms. Some slope terms were dropped for this reason, reflecting limited annual data points.
+
+Overall, the ITS regression provides strong evidence that COVID onset produced a dramatic disruption in mortality patterns, while vaccine interventions had smaller, less consistent impacts, with the combined indicator reinforcing the broader downward adjustment in mortality during the vaccine era.
+
+```{r}
+library(dplyr)
+library(ggplot2)
+library(scales)
+library(broom)   # for tidy regression output
+
+# Step 1: Filter annual totals (all causes, all sexes, all races, all ages)
+annual_totals <- mortality_full %>%
+  dplyr::filter(
+    sex == "All sexes",
+    race_ethnicity == "All races/ethnicities",
+    age_category == "All ages",
+    leading_cause_death == "All causes",
+    metric_name == "count_of_deaths"
+  ) %>%
+  mutate(year = as.integer(year)) %>%
+  arrange(year) %>%
+  dplyr::select(year, total_deaths = metric_value) %>%
+  distinct()
+
+# Step 2: Define COVID intervention years
+covid_interventions <- c(2020, 2021, 2022)
+year_index <- match(covid_interventions, annual_totals$year)
+
+# Step 3: Create ITS variables for each intervention
+annual_totals <- annual_totals %>%
+  mutate(
+    time = row_number(),
+    post_2020 = ifelse(year >= 2020, 1, 0),
+    time_post2020 = ifelse(year >= 2020, time - year_index[1] + 1, 0),
+    post_2021 = ifelse(year >= 2021, 1, 0),
+    time_post2021 = ifelse(year >= 2021, time - year_index[2] + 1, 0),
+    post_2022 = ifelse(year >= 2022, 1, 0),
+    time_post2022 = ifelse(year >= 2022, time - year_index[3] + 1, 0),
+    # NEW combined indicator for vaccine era
+    post_2021plus = ifelse(year >= 2021, 1, 0)
+  )
+
+# Step 4: Fit ITS regression with multiple interventions
+covid_model_multi <- lm(
+  total_deaths ~ time +
+    post_2020 + time_post2020 +
+    post_2021 + time_post2021 +
+    post_2022 + time_post2022 +
+    post_2021plus,
+  data = annual_totals
+)
+
+# Step 5: Add fitted values
+annual_totals$fitted <- predict(covid_model_multi)
+
+# Step 6: Visualize observed vs fitted with all interventions
+theme_project <- function() {
+  theme_classic(base_size = 14) +
+    theme(
+      plot.title = element_text(face = "bold"),
+      plot.subtitle = element_text(size = 12, margin = margin(b = 10))
+    )
+}
+
+ggplot(annual_totals, aes(x = year)) +
+  geom_line(aes(y = total_deaths), color = "darkred", size = 1.2) +
+  geom_point(aes(y = total_deaths), color = "darkred", size = 2) +
+  geom_line(aes(y = fitted), color = "steelblue", linetype = "dashed", size = 1.2) +
+  geom_vline(xintercept = 2020, linetype = "dashed", color = "blue") +
+  geom_vline(xintercept = 2021, linetype = "dashed", color = "blue") +
+  geom_vline(xintercept = 2022, linetype = "dashed", color = "blue") +
+  annotate("text", x = 2020, y = max(annual_totals$total_deaths)*0.9,
+           label = "COVID onset (2020)", angle = 90, vjust = -0.5, color = "blue") +
+  annotate("text", x = 2021, y = max(annual_totals$total_deaths)*0.9,
+           label = "Vaccine rollout (2021)", angle = 90, vjust = -0.5, color = "blue") +
+  annotate("text", x = 2022, y = max(annual_totals$total_deaths)*0.9,
+           label = "Booster rollout (2022)", angle = 90, vjust = -0.5, color = "blue") +
+  labs(
+    title = "ITS: COVID Mortality Interventions in Philadelphia",
+    subtitle = "Observed deaths (red) vs fitted ITS model (blue dashed)\nCOVID onset and vaccine milestones marked",
+    x = "Year",
+    y = "Total Deaths"
+  ) +
+  scale_y_continuous(labels = comma) +
+  theme_project()
+
+# Step 7: Create regression results table
+results_table <- broom::tidy(covid_model_multi) %>%
+  dplyr::select(term, estimate, std.error, statistic, p.value)
+
+results_table
+
+
+
+
+
+```
+
+### **Multiple Opioid Interventions in ITS**: I applied Interrupted Time Series (ITS) regression to annual unintentional drug overdose deaths in Philadelphia, using them as a proxy for opioid mortality. Intervention years were defined as 2014 (fentanyl surge), 2017 (Narcan distribution), 2022 (Narcan vending machines), and 2023 (OTC Narcan availability). For each intervention, dummy indicators captured immediate level changes, and slope variables captured changes in trajectory after the intervention. A linear regression model including all terms was fit, and fitted values were plotted against observed deaths with vertical dashed lines marking intervention years.
+
+The model explained nearly all variation in overdose deaths (R² ≈ 0.99, adjusted R² ≈ 0.96) with a highly significant overall fit. Baseline deaths were \~481, with no significant underlying time trend before interventions. Results show that the 2017 Narcan distribution was associated with a positive level change (\~213, marginally significant). The 2022 vending machine rollout produced both a large immediate increase (\~423, p \< 0.05) and a significant negative slope thereafter (\~–356, p \< 0.05), suggesting deaths rose sharply but then declined. The 2014 fentanyl surge showed a small negative level change (\~–14, non‑significant) and a positive slope (\~160, non‑significant). The 2023 OTC Narcan availability showed a positive level change (\~231) but was not statistically significant. Some slope terms were dropped due to collinearity, reflecting limited annual data points.
+
+Taken together, these findings indicate that opioid interventions in 2017 and 2022 coincided with meaningful shifts in overdose mortality patterns, while other milestones had less measurable impact. ITS provides a structured way to detect both sharp disruptions and gradual changes in mortality trends, though results must be interpreted cautiously given data granularity and overlapping events.
+
+```{r}
+
+library(dplyr)
+library(ggplot2)
+library(scales)
+library(broom)
+
+# Step 1: Filter unintentional drug overdose deaths (proxy for opioid mortality)
+opioid_deaths <- mortality_full %>%
+  dplyr::filter(
+    leading_cause_death == "Drug overdose (unintentional)",
+    metric_name == "count_of_deaths",
+    sex == "All sexes",
+    race_ethnicity == "All races/ethnicities",
+    age_category == "All ages"
+  ) %>%
+  mutate(year = as.integer(year)) %>%
+  arrange(year) %>%
+  dplyr::select(year, opioid_deaths = metric_value) %>%
+  distinct()
+
+# Step 2: Define intervention years
+interventions <- c(2014, 2017, 2022, 2023)
+year_index <- match(interventions, opioid_deaths$year)
+
+# Step 3: Create ITS variables for each intervention
+opioid_deaths <- opioid_deaths %>%
+  mutate(time = row_number(),
+         post_2014 = ifelse(year >= 2014, 1, 0),
+         time_post2014 = ifelse(year >= 2014, time - year_index[1] + 1, 0),
+         post_2017 = ifelse(year >= 2017, 1, 0),
+         time_post2017 = ifelse(year >= 2017, time - year_index[2] + 1, 0),
+         post_2022 = ifelse(year >= 2022, 1, 0),
+         time_post2022 = ifelse(year >= 2022, time - year_index[3] + 1, 0),
+         post_2023 = ifelse(year >= 2023, 1, 0),
+         time_post2023 = ifelse(year >= 2023, time - year_index[4] + 1, 0))
+
+# Step 4: Fit ITS regression with multiple interventions
+opioid_model_multi <- lm(
+  opioid_deaths ~ time +
+    post_2014 + time_post2014 +
+    post_2017 + time_post2017 +
+    post_2022 + time_post2022 +
+    post_2023 + time_post2023,
+  data = opioid_deaths
+)
+
+# Step 5: Add fitted values
+opioid_deaths$fitted <- predict(opioid_model_multi)
+
+# Step 6: Define reusable theme
+theme_project <- function() {
+  theme_classic(base_size = 14) +
+    theme(
+      plot.title = element_text(face = "bold"),
+      plot.subtitle = element_text(size = 12, margin = margin(b = 10))
+    )
+}
+
+# Step 7: Visualize observed vs fitted with interventions
+ggplot(opioid_deaths, aes(x = year)) +
+  geom_line(aes(y = opioid_deaths), color = "darkred", size = 1.2) +
+  geom_point(aes(y = opioid_deaths), color = "darkred", size = 2) +
+  geom_line(aes(y = fitted), color = "steelblue", linetype = "dashed", size = 1.2) +
+  geom_vline(xintercept = 2014, linetype = "dashed", color = "red") +
+  geom_vline(xintercept = 2017, linetype = "dashed", color = "purple") +
+  geom_vline(xintercept = 2022, linetype = "dashed", color = "darkgreen") +
+  geom_vline(xintercept = 2023, linetype = "dashed", color = "orange") +
+  annotate("text", x = 2014, y = max(opioid_deaths$opioid_deaths)*0.9,
+           label = "Fentanyl surge (2014)", angle = 90, vjust = -0.5, color = "red") +
+  annotate("text", x = 2017, y = max(opioid_deaths$opioid_deaths)*0.9,
+           label = "Narcan distribution (2017)", angle = 90, vjust = -0.5, color = "purple") +
+  annotate("text", x = 2022, y = max(opioid_deaths$opioid_deaths)*0.9,
+           label = "Vending machines (2022)", angle = 90, vjust = -0.5, color = "darkgreen") +
+  annotate("text", x = 2023, y = max(opioid_deaths$opioid_deaths)*0.9,
+           label = "OTC Narcan (2023)", angle = 90, vjust = -0.5, color = "orange") +
+  labs(
+    title = "ITS: Opioid Mortality Interventions in Philadelphia",
+    subtitle = "Observed overdose deaths (red) vs fitted ITS model (blue dashed)\nIntervention years marked",
+    x = "Year",
+    y = "Unintentional Drug Overdose Deaths"
+  ) +
+  scale_y_continuous(labels = comma) +
+  theme_project()
+
+# Step 8: Regression results table
+opioid_results_table <- broom::tidy(opioid_model_multi) %>%
+  dplyr::select(term, estimate, std.error, statistic, p.value)
+
+print(opioid_results_table)
+
+
+
+
+
+```
+
+### **Combined ITS Visualization for Side‑by‑Side Comparison:** The combined ITS visualization places COVID and opioid mortality trends side‑by‑side, allowing direct comparison of how two overlapping public health crises disrupted Philadelphia’s mortality landscape. In the COVID plot, deaths spiked sharply in 2020 at pandemic onset, followed by a significant decline, with vaccine milestones in 2021 and 2022 producing smaller adjustments. In contrast, the opioid plot shows a gradual rise in overdose deaths, punctuated by interventions: a marginal increase at Narcan distribution in 2017, and a significant spike followed by decline at vending machine rollout in 2022. OTC Narcan in 2023 showed a positive but non‑significant level change. Together, the paired plots highlight the difference between a sudden pandemic shock and a slower overdose epidemic, while illustrating that interventions had uneven impacts across crises.
+
+```{r}
+library(ggplot2)
+library(patchwork)
+library(scales)
+
+# --- Reusable theme ---
+theme_project <- function() {
+  theme_classic(base_size = 14) +
+    theme(
+      plot.title = element_text(face = "bold"),
+      plot.subtitle = element_text(size = 12, margin = margin(b = 10))
+    )
+}
+
+# --- COVID ITS Plot ---
+covid_plot <- ggplot(annual_totals, aes(x = year)) +
+  geom_line(aes(y = total_deaths), color = "darkred", size = 1.2) +
+  geom_point(aes(y = total_deaths), color = "darkred", size = 2) +
+  geom_line(aes(y = fitted), color = "steelblue", linetype = "dashed", size = 1.2) +
+  geom_vline(xintercept = 2020, linetype = "dashed", color = "blue") +
+  geom_vline(xintercept = 2021, linetype = "dashed", color = "blue") +
+  geom_vline(xintercept = 2022, linetype = "dashed", color = "blue") +
+  annotate("text", x = 2020, y = max(annual_totals$total_deaths)*0.9,
+           label = "COVID onset (2020)", angle = 90, vjust = -0.5, color = "blue") +
+  annotate("text", x = 2021, y = max(annual_totals$total_deaths)*0.9,
+           label = "Vaccine rollout (2021)", angle = 90, vjust = -0.5, color = "blue") +
+  annotate("text", x = 2022, y = max(annual_totals$total_deaths)*0.9,
+           label = "Booster rollout (2022)", angle = 90, vjust = -0.5, color = "blue") +
+  labs(
+    title = "COVID ITS Model",
+    subtitle = "Observed deaths (red) vs fitted ITS model (blue dashed)",
+    x = "Year",
+    y = "Total Deaths"
+  ) +
+  scale_y_continuous(labels = comma) +
+  theme_project()
+
+# --- Opioid ITS Plot ---
+opioid_plot <- ggplot(opioid_deaths, aes(x = year)) +
+  geom_line(aes(y = opioid_deaths), color = "darkred", size = 1.2) +
+  geom_point(aes(y = opioid_deaths), color = "darkred", size = 2) +
+  geom_line(aes(y = fitted), color = "steelblue", linetype = "dashed", size = 1.2) +
+  geom_vline(xintercept = 2014, linetype = "dashed", color = "red") +
+  geom_vline(xintercept = 2017, linetype = "dashed", color = "purple") +
+  geom_vline(xintercept = 2022, linetype = "dashed", color = "darkgreen") +
+  geom_vline(xintercept = 2023, linetype = "dashed", color = "orange") +
+  annotate("text", x = 2014, y = max(opioid_deaths$opioid_deaths)*0.9,
+           label = "Fentanyl surge (2014)", angle = 90, vjust = -0.5, color = "red") +
+  annotate("text", x = 2017, y = max(opioid_deaths$opioid_deaths)*0.9,
+           label = "Narcan distribution (2017)", angle = 90, vjust = -0.5, color = "purple") +
+  annotate("text", x = 2022, y = max(opioid_deaths$opioid_deaths)*0.9,
+           label = "Vending machines (2022)", angle = 90, vjust = -0.5, color = "darkgreen") +
+  annotate("text", x = 2023, y = max(opioid_deaths$opioid_deaths)*0.9,
+           label = "OTC Narcan (2023)", angle = 90, vjust = -0.5, color = "orange") +
+  labs(
+    title = "Opioid ITS Model",
+    subtitle = "Observed overdose deaths (red) vs fitted ITS model (blue dashed)",
+    x = "Year",
+    y = "Overdose Deaths"
+  ) +
+  scale_y_continuous(labels = comma) +
+  theme_project()
+
+# --- Combine Side-by-Side ---
+combined_plot <- covid_plot + opioid_plot +
+  plot_layout(ncol = 2) +
+  plot_annotation(
+    title = "Interrupted Time Series Comparisons",
+    subtitle = "COVID vs. Opioid Mortality Interventions in Philadelphia",
+    caption = "Observed deaths in red; fitted ITS model in blue dashed"
+  )
+
+print(combined_plot)
+
+```
+
+**Combined ITS regression for COVID and opioid interventions:** — In the combined interrupted time series regression, I examined all‑cause, opioid, and non‑opioid mortality simultaneously to assess the impacts of both COVID and opioid interventions. For all‑cause mortality, COVID onset in 2020 produced a large and highly significant spike of approximately 4,745 deaths (p \< 0.001), followed by a significant decline of about 730 deaths per year (p = 0.006). The 2021 vaccine rollout was associated with a significant negative level change of –765 deaths (p = 0.009), while the 2022 booster had no measurable effect. Opioid interventions showed mixed impacts in the all‑cause model: the 2014 fentanyl surge slope was significantly positive (+358 per year, p = 0.025), the 2017 Narcan distribution produced a marginal increase (+230, p = 0.07) but a significant decline in slope thereafter (–336 per year, p = 0.012), and OTC Narcan in 2023 was associated with a significant negative level change (–388, p = 0.05). In the opioid‑specific mortality model, COVID onset again produced a significant spike (+438, p = 0.035) followed by a decline (–297 per year, p = 0.049). Vaccine rollout in 2021 (+384, p = 0.047) and boosters in 2022 (+388, p = 0.046) were both associated with significant increases in overdose deaths. Opioid‑specific interventions showed weaker effects: the 2017 Narcan distribution produced a marginal increase (+319, p = 0.053) and a borderline decline in slope (–127 per year, p = 0.098), while OTC Narcan in 2023 was not significant. For non‑opioid mortality, COVID onset produced a large spike (+4,307, p \< 0.001) followed by a significant decline (–434 per year, p = 0.029). The 2021 vaccine rollout was associated with a significant drop (–1,149, p = 0.007), while the 2022 booster showed a marginal decline (–361, p = 0.064). Opioid interventions had limited impact on non‑opioid deaths, though the 2017 Narcan slope (–210 per year, p = 0.048) and OTC Narcan in 2023 (–619, p = 0.034) were associated with significant declines. Taken together, these results show that COVID onset was the dominant driver of mortality spikes across all outcomes, with vaccines producing measurable declines in non‑opioid deaths but less clear effects on overdose deaths. Opioid interventions showed mixed results: the 2017 Narcan rollout and 2022 vending machines coincided with shifts, but only some slope changes were significant. OTC Narcan in 2023 was associated with declines in all‑cause and non‑opioid deaths, but not in opioid deaths, underscoring the uneven effectiveness of interventions across crises.
+
+```{r}
+
+# Packages
+library(dplyr)
+library(ggplot2)
+library(patchwork)
+
+# Assumed inputs:
+# annual_totals: data.frame with columns year (int), total_deaths (numeric)
+# opioid_deaths: data.frame with columns year (int), opioid_deaths (numeric)
+
+# 1) Prepare data -------------------------------------------------------------
+annual_totals <- annual_totals %>% arrange(year) %>% mutate(time = row_number())
+opioid_deaths <- opioid_deaths %>% arrange(year) %>% mutate(time = row_number())
+
+# Create non-opioid deaths series (explicitly use dplyr::select to avoid conflicts)
+non_opioid <- annual_totals %>%
+  dplyr::select(year, total_deaths, time) %>%
+  left_join(opioid_deaths %>% dplyr::select(year, opioid_deaths), by = "year") %>%
+  mutate(non_opioid_deaths = total_deaths - opioid_deaths)
+
+# Helper: add ITS terms
+add_its_terms <- function(df, year_col = "year", time_col = "time", years_vec, prefix){
+  for (yr in years_vec) {
+    post_var <- paste0("post_", prefix, "_", yr)
+    slope_var <- paste0("time_post_", prefix, "_", yr)
+    t0 <- df[[time_col]][df[[year_col]] == yr]
+    df[[post_var]] <- ifelse(df[[year_col]] >= yr, 1, 0)
+    df[[slope_var]] <- ifelse(df[[year_col]] >= yr, df[[time_col]] - t0 + 1, 0)
+  }
+  df
+}
+
+# Intervention years
+covid_years  <- c(2020, 2021, 2022)
+opioid_years <- c(2014, 2017, 2022, 2023)
+
+# Add ITS terms to each dataset
+annual_totals_its <- annual_totals %>%
+  add_its_terms(years_vec = covid_years,  prefix = "covid") %>%
+  add_its_terms(years_vec = opioid_years, prefix = "opioid")
+
+opioid_deaths_its <- opioid_deaths %>%
+  add_its_terms(years_vec = covid_years,  prefix = "covid") %>%
+  add_its_terms(years_vec = opioid_years, prefix = "opioid")
+
+non_opioid_its <- non_opioid %>%
+  add_its_terms(years_vec = covid_years,  prefix = "covid") %>%
+  add_its_terms(years_vec = opioid_years, prefix = "opioid")
+
+# 2) Fit combined ITS models --------------------------------------------------
+make_formula <- function(prefixes, years_vecs, outcome, include_time = TRUE){
+  terms <- c()
+  if (include_time) terms <- c(terms, "time")
+  for (i in seq_along(prefixes)) {
+    pf <- prefixes[i]; yrs <- years_vecs[[i]]
+    for (yr in yrs) {
+      terms <- c(terms, paste0("post_", pf, "_", yr), paste0("time_post_", pf, "_", yr))
+    }
+  }
+  as.formula(paste(outcome, "~", paste(terms, collapse = " + ")))
+}
+
+# All-cause mortality model
+form_total <- make_formula(c("covid","opioid"),
+                           list(covid_years, opioid_years),
+                           outcome = "total_deaths")
+model_total <- lm(form_total, data = annual_totals_its)
+annual_totals_its$fitted <- predict(model_total)
+
+# Opioid mortality model
+form_opioid <- make_formula(c("covid","opioid"),
+                            list(covid_years, opioid_years),
+                            outcome = "opioid_deaths")
+model_opioid <- lm(form_opioid, data = opioid_deaths_its)
+opioid_deaths_its$fitted <- predict(model_opioid)
+
+# Non-opioid mortality model
+form_nonopioid <- make_formula(c("covid","opioid"),
+                               list(covid_years, opioid_years),
+                               outcome = "non_opioid_deaths")
+model_nonopioid <- lm(form_nonopioid, data = non_opioid_its)
+non_opioid_its$fitted <- predict(model_nonopioid)
+
+# 3) Plot observed vs fitted --------------------------------------------------
+add_markers <- function(p, covid_years, opioid_years, op_colors){
+  for (yr in covid_years) {
+    p <- p + geom_vline(xintercept = yr, linetype = "dashed", color = "blue")
+  }
+  for (i in seq_along(opioid_years)) {
+    p <- p + geom_vline(xintercept = opioid_years[i],
+                        linetype = "dashed",
+                        color = op_colors[i])
+  }
+  p
+}
+
+# All-cause mortality plot
+plot_total <- ggplot(annual_totals_its, aes(x = year)) +
+  geom_line(aes(y = total_deaths), color = "darkred", size = 0.9) +
+  geom_point(aes(y = total_deaths), color = "darkred", size = 1.8) +
+  geom_line(aes(y = fitted), color = "steelblue", linetype = "dashed", size = 0.9) +
+  labs(title = "All-cause ITS", x = "Yr", y = "Deaths") +
+  theme_minimal() +
+  theme(
+    plot.title = element_text(size = 10, face = "bold"),
+    axis.title = element_text(size = 9),
+    axis.text = element_text(size = 8)
+  )
+plot_total <- add_markers(plot_total, covid_years, opioid_years,
+                          op_colors = c("red","purple","darkgreen","orange"))
+
+# Opioid mortality plot
+plot_opioid <- ggplot(opioid_deaths_its, aes(x = year)) +
+  geom_line(aes(y = opioid_deaths), color = "darkred", size = 0.9) +
+  geom_point(aes(y = opioid_deaths), color = "darkred", size = 1.8) +
+  geom_line(aes(y = fitted), color = "steelblue", linetype = "dashed", size = 0.9) +
+  labs(title = "Opioid ITS", x = "Yr", y = "OD deaths") +
+  theme_minimal() +
+  theme(
+    plot.title = element_text(size = 10, face = "bold"),
+    axis.title = element_text(size = 9),
+    axis.text = element_text(size = 8)
+  )
+plot_opioid <- add_markers(plot_opioid, covid_years, opioid_years,
+                           op_colors = c("red","purple","darkgreen","orange"))
+
+# Non-opioid mortality plot
+plot_nonopioid <- ggplot(non_opioid_its, aes(x = year)) +
+  geom_line(aes(y = non_opioid_deaths), color = "darkred", size = 0.9) +
+  geom_point(aes(y = non_opioid_deaths), color = "darkred", size = 1.8) +
+  geom_line(aes(y = fitted), color = "steelblue", linetype = "dashed", size = 0.9) +
+  labs(title = "Non-opioid ITS", x = "Yr", y = "Non-OD deaths") +
+  theme_minimal() +
+  theme(
+    plot.title = element_text(size = 10, face = "bold"),
+    axis.title = element_text(size = 9),
+    axis.text = element_text(size = 8)
+  )
+plot_nonopioid <- add_markers(plot_nonopioid, covid_years, opioid_years,
+                              op_colors = c("red","purple","darkgreen","orange"))
+
+# 4) Combine plots ------------------------------------------------------------
+(plot_total | plot_opioid | plot_nonopioid) + plot_layout(ncol = 3)
+
+# View regression summaries
+summary(model_total)      # All-cause mortality
+summary(model_opioid)     # Opioid overdose deaths
+summary(model_nonopioid)  # Non-opioid deaths
+
+
+
+
+
+```
+
+**Compare Coefficients** — To evaluate how opioid intervention effects shift when COVID mortality trends are accounted for, we compared regression coefficients from two Interrupted Time Series (ITS) models: one including only opioid interventions and another including both opioid and COVID interventions. Coefficients were extracted from each model and merged by term into a single comparison table, ensuring that estimates for the same intervention years aligned across models. Each coefficient represents the estimated effect of an intervention on opioid mortality: the intercept captures the baseline level of deaths before interventions, the time term reflects the underlying pre‑intervention slope, post_X terms measure immediate level changes after a given year, and time_post_X terms capture changes in slope following an intervention. Comparing coefficients side by side allows us to distinguish robust effects from confounded ones. Stable coefficients across models, such as the 2014 fentanyl surge, indicate robustness and independence from COVID. Strengthened coefficients in the combined model, such as the Narcan distribution in 2017, suggest the intervention’s effect was underestimated when COVID was not modeled. Disappearing coefficients, such as the 2022 vending machine rollout, highlight confounding with COVID booster effects in the same year. Consistent coefficients, such as OTC Narcan in 2023, remain similar across models but are constrained by short follow‑up. In short, the comparison table serves as a diagnostic check: it confirms which opioid interventions are robust (2014, 2017, 2023), identifies which are confounded (2022), and validates that the baseline trend is stable across models. This strengthens the credibility of the ITS analysis by showing that intervention effects are not overstated and by carefully distinguishing independent impacts from overlapping crises.
+
+```{r}
+# Extract coefficients as named vectors
+coef_opioid_only <- coef(model_opioid_only)
+coef_combined    <- coef(model_opioid)
+
+# Merge by names
+coef_comparison <- data.frame(
+  Term = union(names(coef_opioid_only), names(coef_combined)),
+  Opioid_Only = coef_opioid_only[match(union(names(coef_opioid_only), names(coef_combined)),
+                                       names(coef_opioid_only))],
+  Combined    = coef_combined[match(union(names(coef_opioid_only), names(coef_combined)),
+                                    names(coef_combined))]
+)
+
+print(coef_comparison)
+
+
+
+
+```
+
+**Grouped Bar Chart** — To build on the regression results, we visualized how coefficients shift between the opioid‑only ITS model and the combined ITS model (COVID + opioid) using a grouped bar chart. Intervention terms are shown on the x‑axis, with coefficient values on the y‑axis, and two bars per term: steelblue for the opioid‑only model and firebrick for the combined model. Missing values (NA) indicate coefficients that could not be estimated in the combined model, often due to overlap with COVID interventions in the same year. This visualization highlights relative stability in baseline terms, unchanged estimates for the 2014 fentanyl surge, stronger effects for the 2017 Narcan distribution once COVID is accounted for, and the disappearance of the 2022 vending machine rollout due to confounding. The 2023 OTC Narcan intervention remains consistent across models, though slope estimates are limited by short follow‑up. In short, the grouped bar chart makes coefficient shifts visually obvious, showing at a glance which interventions are robust and which are confounded, without needing to revisit the detailed statistics.
+
+```{r}
+# Manually create coefficient comparison data
+coef_comparison <- data.frame(
+  Term = c("(Intercept)", "time",
+           "post_opioid_2014", "time_post_opioid_2014",
+           "post_opioid_2017", "time_post_opioid_2017",
+           "post_opioid_2022", "time_post_opioid_2022",
+           "post_opioid_2023"),
+  Opioid_Only = c(481, -52,
+                  -14.3, 159.5,
+                  212.8, -67.1,
+                  423, -356.4,
+                  231),
+  Combined = c(481, -52,
+               -14.3, 159.5,
+               318.5, -127,
+               NA, NA,
+               231)
+)
+
+# Convert to long format for plotting
+coef_long <- tidyr::pivot_longer(coef_comparison,
+                                 cols = c(Opioid_Only, Combined),
+                                 names_to = "Model",
+                                 values_to = "Coefficient")
+
+# Reorder terms chronologically for plotting
+coef_long$Term <- factor(coef_long$Term,
+                         levels = c("(Intercept)", "time",
+                                    "post_opioid_2014", "time_post_opioid_2014",
+                                    "post_opioid_2017", "time_post_opioid_2017",
+                                    "post_opioid_2022", "time_post_opioid_2022",
+                                    "post_opioid_2023"))
+
+# Plot grouped bar chart with labels
+ggplot(coef_long, aes(x = Term, y = Coefficient, fill = Model)) +
+  geom_col(position = position_dodge(width = 0.7), width = 0.6, na.rm = TRUE) +
+  geom_text(aes(label = round(Coefficient, 1)),
+            position = position_dodge(width = 0.7),
+            vjust = -0.3, size = 3, na.rm = TRUE) +
+  scale_fill_manual(values = c("Opioid_Only" = "steelblue", "Combined" = "firebrick")) +
+  labs(title = "Coefficient Shifts: Opioid-only vs Combined ITS Models",
+       x = "Intervention Term", y = "Coefficient Value") +
+  theme_minimal() +
+  theme(axis.text.x = element_text(angle = 45, hjust = 1))
+
+
+
+```
+
+**Visualizing Coefficient Shifts with Confidence Intervals and p‑values: Visualizing Coefficient Shifts with Confidence Intervals and p‑values:** To add statistical rigor to the coefficient comparison, we extended the visualization by including confidence intervals and p‑values. Regression summaries from both models were extracted and merged, and 95% confidence intervals were calculated to show the plausible range of values around each estimate. The chart displays coefficient magnitudes as bars, with error bars representing confidence intervals and text labels reporting p‑values. Steelblue bars represent the opioid‑only model, while firebrick bars represent the combined model. Narrow intervals indicate precise, reliable effects, while wide intervals reflect uncertainty. Interventions whose intervals exclude zero are statistically significant, while those overlapping zero are not distinguishable from no effect. This visualization confirms that baseline terms are stable across models, with no underlying time trend. The 2014 fentanyl surge coefficients remain unchanged but are not statistically significant, indicating stability rather than robustness. The 2017 Narcan distribution appears stronger in the combined model, though its significance remains marginal, and slope changes are borderline. The 2022 vending machine rollout is significant in the opioid‑only model but disappears entirely in the combined model due to collinearity with COVID interventions, underscoring confounding rather than lack of effect. The 2023 OTC Narcan intervention remains consistent across models but is not statistically significant, reflecting limited follow‑up. A companion confidence interval table supplements the visualization with exact numeric values, ensuring results are both visually intuitive and numerically precise. Together, this step shifts the focus from raw coefficients to the reliability of those estimates, clarifying which intervention effects are statistically credible and which are confounded by overlapping crises.
+
+-   
+
+    ```{r}
+    # Packages
+    library(dplyr)
+    library(ggplot2)
+    library(broom)
+    library(tidyr)
+
+    # Step 1: Extract summaries from both models
+    results_opioid_only <- broom::tidy(model_opioid_only) %>%
+      mutate(Model = "Opioid_Only")
+
+    results_combined <- broom::tidy(model_opioid) %>%
+      mutate(Model = "Combined")
+
+    # Step 2: Combine datasets
+    results_all <- bind_rows(results_opioid_only, results_combined)
+
+    # Step 3: Compute 95% confidence intervals
+    results_all <- results_all %>%
+      mutate(
+        conf.low = estimate - 1.96 * std.error,
+        conf.high = estimate + 1.96 * std.error
+      )
+
+    # Step 4: Reorder terms chronologically for plotting
+    results_all$term <- factor(results_all$term,
+                               levels = c("(Intercept)", "time",
+                                          "post_opioid_2014", "time_post_opioid_2014",
+                                          "post_opioid_2017", "time_post_opioid_2017",
+                                          "post_opioid_2022", "time_post_opioid_2022",
+                                          "post_opioid_2023", "time_post_opioid_2023"))
+
+    # Step 5: Visualization with bars, error bars, and p-value labels
+    ggplot(results_all %>% filter(!is.na(estimate)), 
+           aes(x = term, y = estimate, fill = Model)) +
+      geom_col(position = position_dodge(width = 0.7), width = 0.6) +
+      geom_errorbar(aes(ymin = conf.low, ymax = conf.high),
+                    position = position_dodge(width = 0.7),
+                    width = 0.2) +
+      geom_text(aes(label = paste0("p=", round(p.value, 3))),
+                position = position_dodge(width = 0.7),
+                vjust = -0.5, size = 3) +
+      scale_fill_manual(values = c("Opioid_Only" = "steelblue", "Combined" = "firebrick")) +
+      labs(title = "Coefficient Shifts with 95% CIs and p-values",
+           x = "Intervention Term", y = "Coefficient Estimate") +
+      theme_minimal() +
+      theme(axis.text.x = element_text(angle = 30, hjust = 1, size = 8),
+            legend.position = "top")
+
+    # Step 6: Confidence interval table for precise reporting
+    ci_table <- results_all %>%
+      mutate(
+        Estimate = round(estimate, 2),
+        StdError = round(std.error, 2),
+        CI_Low = round(conf.low, 2),
+        CI_High = round(conf.high, 2),
+        PValue = round(p.value, 3)
+      ) %>%
+      dplyr::select(Model, term, Estimate, StdError, CI_Low, CI_High, PValue)
+
+    print(ci_table)
+
+
+    ```
+
+**Overall interpretation of ITS analysis**Overall Interpretation of ITS Analysis: The Interrupted Time Series (ITS) analysis demonstrates that COVID onset in 2020 was the dominant driver of mortality spikes across Philadelphia, producing a sharp and highly significant increase in deaths followed by measurable declines in subsequent years. Vaccines contributed to reductions in non‑opioid mortality, though their effects on overdose deaths were less consistent, and the 2022 booster had little independent impact. Opioid interventions showed mixed results: the 2017 Narcan distribution and the 2022 vending machine rollout coincided with meaningful shifts, while the 2014 fentanyl surge and 2023 OTC Narcan availability produced weaker or statistically unstable effects. Coefficient comparisons between opioid‑only and combined models revealed which interventions were robust, which strengthened when COVID was accounted for, and which disappeared due to confounding. For example, the vending machine rollout appeared significant in the opioid‑only model but dropped out entirely once COVID booster effects were included, underscoring the importance of modeling both crises together. Confidence intervals and p‑values added further rigor, clarifying which effects were statistically credible and which were marginal or imprecise. Taken together, the ITS framework not only clarifies the timing, strength, and reliability of intervention effects but also prevents misattribution by disentangling opioid‑specific impacts from pandemic‑related mortality shifts. This strengthens both the statistical validity and the policy relevance of the findings, giving policymakers confidence in scaling interventions like Narcan distribution and OTC access while interpreting overlapping events, such as the 2022 vending machine rollout, with caution.
+
+*“Future work could stratify ITS models by race, sex, and age to assess whether interventions reduced disparities or whether gaps persisted.”*
+
+***Top 10 Causes of Death by Year***
+
+**Interactive Top 10 Causes of Death by Year (Table, Bar Chart, and Rank Trends)** This analysis generates both tabular summaries and interactive visualizations to track how leading causes of death evolve over time. Records are filtered to include all sexes, races/ethnicities, and ages while excluding the aggregate “All causes” category, with suppressed or invalid values removed to ensure data quality. Annual totals are computed to serve as denominators for percentage calculations, and each cause is ranked by death count within its year, with its share of total mortality expressed as a percentage. Only the top 10 causes per year are retained, producing a concise dataset for analysis. A formatted summary table lists year, rank, cause, deaths, and percent contribution, while a stacked bar chart highlights COVID‑19 (red), drug overdose (orange), and cancer (blue) against other causes, with hover tooltips revealing rank, deaths, and percent contribution. Complementing this, an interactive line chart shows how the rank of each cause shifts over time, with rank 1 (highest) displayed at the top of the y‑axis. Together, the table provides precise numeric detail, the bar chart shows absolute counts, and the line chart reveals relative importance. Interpretation highlights COVID‑19’s sharp rise and decline during the pandemic, drug overdose’s steady climb reflecting the opioid crisis, and cancer’s persistent burden. In short, this integrated approach combines numeric precision with dynamic visualization, offering a comprehensive view of how mortality drivers change year by year.
+
+```{r}
+library(dplyr)
+
+# Filter mortality dataset to include only valid records
+leading_causes_table <- mortality_full %>%
+  filter(sex == "All sexes",
+         race_ethnicity == "All races/ethnicities",
+         age_category == "All ages",
+         metric_name == "count_of_deaths",
+         leading_cause_death != "All causes",
+         metric_value != -99999,
+         (is.na(quality_flag) | quality_flag != "suppressed")) %>%
+  mutate(year = as.integer(year)) %>%
+  dplyr::select(year, leading_cause_death, deaths = metric_value)
+
+# Compute totals per year
+totals_per_year <- leading_causes_table %>%
+  group_by(year) %>%
+  summarise(total_deaths = sum(deaths), .groups = "drop")
+
+# Add rank and percentage contribution
+leading_causes_ranked <- leading_causes_table %>%
+  group_by(year) %>%
+  mutate(rank = dense_rank(desc(deaths))) %>%
+  left_join(totals_per_year, by = "year") %>%
+  mutate(percent = round(100 * deaths / total_deaths, 1)) %>%
+  ungroup()
+
+# Keep only top 10 causes per year
+top10_table <- leading_causes_ranked %>%
+  filter(rank <= 10) %>%
+  arrange(year, rank)
+
+# Print nicely formatted table
+top10_table %>%
+  dplyr::select(year, rank, leading_cause_death, deaths, percent)
+
+
+
+```
+
+```{r}
+library(ggplot2)
+library(plotly)
+library(dplyr)
+
+# Reuse the ranked dataset from the table chunk
+top10_causes <- leading_causes_ranked %>%
+  filter(rank <= 10)
+
+# Step 1: Build distinct color palette for all causes
+all_causes <- unique(top10_causes$leading_cause_death)
+palette <- scales::hue_pal()(length(all_causes))
+names(palette) <- all_causes
+
+# Step 2: Override specific colors to emphasize key causes
+palette["COVID-19"] <- "firebrick"                       # strong red
+palette["Drug overdose (unintentional)"] <- "darkorange" # bold orange
+palette["Cancer"] <- "steelblue"                         # subtle cool blue
+
+# Step 3: Build ggplot with hover text
+p <- ggplot(top10_causes, aes(x = factor(year), y = deaths, fill = leading_cause_death,
+                              text = paste0("Cause: ", leading_cause_death,
+                                            "<br>Rank: ", rank,
+                                            "<br>Deaths: ", deaths,
+                                            "<br>Percent: ", percent, "%"))) +
+  geom_bar(stat = "identity", width = 0.8) +   # narrower bars for spacing
+  scale_fill_manual(values = palette) +
+  labs(title = "Top 10 Causes of Death per Year",
+       subtitle = "All sexes, all races/ethnicities, all ages (excluding All causes)",
+       x = "Year", y = "Deaths") +
+  theme_minimal() +
+  theme(
+    legend.position = "right",
+    legend.title = element_blank(),
+    axis.text.x = element_text(angle = 45, hjust = 1)   # rotate labels to avoid overlap
+  )
+
+# Step 4: Convert to interactive plotly chart with hover tooltips
+ggplotly(p, tooltip = "text")
+
+
+
+
+
+
+```
+
+```{r}
+library(dplyr)
+library(plotly)
+library(scales)
+
+# Step 1: Prepare the ranked dataset
+leading_causes_table <- mortality_full %>%
+  filter(sex == "All sexes",
+         race_ethnicity == "All races/ethnicities",
+         age_category == "All ages",
+         metric_name == "count_of_deaths",
+         leading_cause_death != "All causes",
+         metric_value != -99999,
+         (is.na(quality_flag) | quality_flag != "suppressed")) %>%
+  mutate(year = as.integer(year)) %>%
+  dplyr::select(year, leading_cause_death, deaths = metric_value)   # fix: force dplyr::select
+
+# Step 2: Compute totals per year
+totals_per_year <- leading_causes_table %>%
+  group_by(year) %>%
+  summarise(total_deaths = sum(deaths), .groups = "drop")
+
+# Step 3: Add rank and percentage contribution
+leading_causes_ranked <- leading_causes_table %>%
+  group_by(year) %>%
+  mutate(rank = dense_rank(desc(deaths))) %>%
+  left_join(totals_per_year, by = "year") %>%
+  mutate(percent = round(100 * deaths / total_deaths, 1)) %>%
+  ungroup()
+
+# Step 4: Keep only top 10 causes per year
+top10_causes <- leading_causes_ranked %>%
+  filter(rank <= 10)
+
+# Step 5: Build full color palette for all causes
+all_causes <- unique(top10_causes$leading_cause_death)
+palette <- hue_pal()(length(all_causes))
+names(palette) <- all_causes
+
+# Step 6: Override specific colors for emphasis
+palette["COVID-19"] <- "firebrick"
+palette["Drug overdose (unintentional)"] <- "darkorange"
+palette["Cancer"] <- "steelblue"
+
+# Step 7: Interactive line chart with lines + markers
+plot_ly(top10_causes,
+        x = ~year,
+        y = ~rank,
+        color = ~leading_cause_death,
+        colors = palette,
+        type = 'scatter',
+        mode = 'lines+markers',
+        text = ~paste("Cause:", leading_cause_death,
+                      "<br>Rank:", rank,
+                      "<br>Deaths:", deaths,
+                      "<br>Percent:", percent, "%"),
+        hoverinfo = "text") %>%
+  layout(title = "Interactive Rank Trends in Top 10 Causes of Death per Year",
+         xaxis = list(title = "Year"),
+         yaxis = list(title = "Rank (1 = highest)", autorange = "reversed"))
+
+
+
+```
+
+***Demographic Analysis of Mortality Trends Using Raw Death Counts:***
+
+**Demographic Analysis of Mortality Trends Using Raw Death Counts — Filtering:** The first step in the demographic analysis is to establish a clean dataset of valid mortality records. I begin with the full mortality file, which contains observations across causes, demographic groups, and metrics, and restrict it to the metric *“count_of_deaths”* to ensure we are working with raw death counts rather than derived rates or percentages. Placeholder values (−99999) are removed to eliminate invalid entries, and rows flagged as “suppressed” are excluded while retaining those with missing flags to avoid unnecessary data loss. This filtering process ensures that the dataset reflects true mortality patterns without distortion from noise or bias. By isolating unsuppressed, valid counts, we create a reliable foundation for subsequent summaries and visualizations, enabling clear comparisons of mortality trends across sex, race/ethnicity, and age categories. In short, this step guarantees that the demographic analysis is grounded in accurate raw counts, which is essential for interpreting disparities and shifts in mortality over time
+
+```{r}
+
+mortality_counts <- mortality_full %>%
+  # Step 1: Start with the full mortality dataset
+  # mortality_full contains records across causes, demographics, and metrics
+  
+  filter(
+    # Step 2: Keep only rows where the metric is raw death counts
+    metric_name == "count_of_deaths",
+    
+    # Step 3: Remove placeholder or invalid values (-99999)
+    metric_value != -99999,
+    
+    # Step 4: Exclude suppressed data but keep rows where the flag is missing
+    (is.na(quality_flag) | quality_flag != "suppressed")
+  )
+
+```
+
+**Summarizing by Demographic Group:** After filtering for valid mortality records, the next step is to aggregate raw death counts into a structured summary table organized by year, sex, race/ethnicity, and age category. The dataset is grouped by these demographic variables to create meaningful slices of the data, and within each slice the total number of deaths is calculated by summing raw counts. The `.groups = "drop"` option ensures the output remains a flat table rather than nested groupings, making it easier to work with in subsequent steps. The results are arranged for consistent ordering and the first 20 rows are displayed using `kable()`, which produces a clean, publication‑ready format. This summary table serves as the foundation for demographic analysis: it provides exact counts for each subgroup, enabling clear comparisons across populations and over time. With this structure in place, the data can be readily visualized through line charts, faceted plots, or other graphics to highlight disparities and shifts in mortality trends. In short, this aggregation transforms raw death counts into structured demographic insights, setting the stage for deeper exploration of patterns across sex, race/ethnicity, and age categories.
+
+```{r}
+
+# Summarizing by Demographic Group
+
+mortality_summary <- mortality_counts %>%
+  # Step 1: Organize the data by year and demographic categories
+  group_by(year, sex, race_ethnicity, age_category) %>%
+  
+  # Step 2: Calculate the total deaths for each demographic slice
+  summarise(total_deaths = sum(metric_value, na.rm = TRUE), .groups = "drop") %>%
+  
+  # Step 3: Arrange output for consistent ordering
+  arrange(year, sex, race_ethnicity, age_category)
+
+# Step 4: Print the first 20 rows of the summary table in a clean format
+kable(
+  slice_head(mortality_summary, n = 20),
+  format = "markdown"
+)
+
+
+
+```
+
+**Bar Plot by Age Group with Interventions** — This visualization displays raw death counts by age group per year, overlaid with markers for opioid and COVID interventions. Side‑by‑side bars allow direct comparison across age categories, while dashed vertical lines mark key milestones such as the 2014 fentanyl surge, 2017 Narcan distribution, 2022 vending machine rollout, and 2023 OTC Narcan availability. Additional dashed lines highlight the onset of COVID and vaccine rollout years. Labels are placed above the bars to describe each intervention, and rotated text annotations show vaccine doses without overlapping the chart. Clear titles, axis labels, and a minimal theme improve readability, while expanded limits ensure labels are not clipped. Together, the chart highlights demographic differences in mortality by age group and contextualizes these patterns with the timing of public health interventions, offering a clear, integrated view of both disparities and the impact of policy actions over time.
+
+```{r}
+
+
+
+ggplot(mortality_summary, aes(x = year, y = total_deaths, fill = age_category)) +
+  # Step 1: Create grouped bars by age category
+  geom_bar(stat = "identity", position = "dodge") +
+  
+  # Step 2: Add dashed vertical lines for opioid interventions
+  geom_vline(xintercept = 2014, linetype = "dashed", color = "red") +        # Fentanyl surge
+  geom_vline(xintercept = 2017, linetype = "dashed", color = "purple") +     # Narcan distribution
+  geom_vline(xintercept = 2022, linetype = "dashed", color = "darkgreen") +  # Narcan vending machines
+  geom_vline(xintercept = 2023, linetype = "dashed", color = "orange") +     # OTC Narcan
+  
+  # Step 3: Add dashed vertical lines for COVID milestones
+  geom_vline(xintercept = covid_onset_year, linetype = "dashed", color = "blue") +  # COVID onset
+  geom_vline(data = mortality_counts %>% filter(!is.na(covid_vaccine_doses_philadelphia)),
+             aes(xintercept = year), linetype = "dashed", color = "blue") +         # Vaccine rollout
+  
+  # Step 4: Place labels for opioid and COVID interventions above the bars
+  annotate("text", x = 2014, y = max(mortality_summary$total_deaths)*0.95,
+           label = "Fentanyl surge", angle = 90, vjust = -0.5, color = "red") +
+  annotate("text", x = 2017, y = max(mortality_summary$total_deaths)*0.95,
+           label = "Narcan distribution", angle = 90, vjust = -0.5, color = "purple") +
+  annotate("text", x = covid_onset_year, y = max(mortality_summary$total_deaths)*0.92,
+           label = paste("COVID onset (", covid_onset_year, ")", sep = ""),
+           angle = 90, vjust = -0.5, color = "blue") +
+  annotate("text", x = 2022, y = max(mortality_summary$total_deaths)*0.95,
+           label = "Narcan vending machines", angle = 90, vjust = -0.5, color = "darkgreen") +
+  annotate("text", x = 2023, y = max(mortality_summary$total_deaths)*0.95,
+           label = "OTC Narcan", angle = 90, vjust = -0.5, color = "orange") +
+  
+  # Step 5: Add vaccine dose labels, rotated and positioned higher
+  geom_text(data = mortality_counts %>% filter(!is.na(covid_vaccine_doses_philadelphia)),
+            aes(x = year, y = min(mortality_summary$total_deaths)*1.15,
+                label = paste0("Vaccines: ", covid_vaccine_doses_philadelphia)),
+            angle = 90, hjust = -0.2, vjust = -0.5, color = "blue", inherit.aes = FALSE) +
+  
+  # Step 6: Add titles, labels, and theme
+  labs(title = "Deaths by Age Group per Year",
+       subtitle = "Raw death counts with opioid and COVID interventions",
+       x = "Year", y = "Total Deaths") +
+  theme_minimal() +
+  
+  # Step 7: Expand y-axis limits to prevent labels from being clipped
+  expand_limits(y = max(mortality_summary$total_deaths) * 1.05)
+
+
+
+```
+
+```{r}
+library(gridExtra)
+
+# Create the plot
+p <- ggplot(mortality_summary, aes(x = year, y = total_deaths, fill = age_category)) +
+  geom_bar(stat = "identity", position = "dodge") +
+  geom_vline(xintercept = 2014, linetype = "dashed", color = "red") +
+  geom_vline(xintercept = 2017, linetype = "dashed", color = "purple") +
+  geom_vline(xintercept = 2022, linetype = "dashed", color = "darkgreen") +
+  geom_vline(xintercept = 2023, linetype = "dashed", color = "orange") +
+  geom_vline(xintercept = covid_onset_year, linetype = "dashed", color = "blue") +
+  geom_vline(data = mortality_counts %>% filter(!is.na(covid_vaccine_doses_philadelphia)),
+             aes(xintercept = year), linetype = "dashed", color = "blue") +
+  labs(title = "Deaths by Age Group per Year",
+       subtitle = "Raw death counts with opioid and COVID interventions",
+       x = "Year", y = "Total Deaths") +
+  theme_minimal()
+
+# Create a table of the data
+tbl <- tableGrob(mortality_summary, rows = NULL)
+
+# Arrange plot and table vertically
+grid.arrange(p, tbl, ncol = 1, heights = c(3, 1))
+
+```
+
+```{r}
+library(ggplot2)
+library(dplyr)
+library(scales)
+
+# Step 1: Aggregate so there is only one row per year per age group
+mortality_summary_clean <- mortality_summary %>%
+  filter(age_category != "All ages") %>%
+  group_by(year, age_category) %>%
+  summarise(total_deaths = sum(total_deaths, na.rm = TRUE), .groups = "drop")
+
+# Step 2: Plot multi-line chart
+ggplot(mortality_summary_clean,
+       aes(x = year, y = total_deaths, color = age_category, group = age_category)) +
+  
+  geom_line(size = 1.2) +   # one line per age group
+  geom_point(size = 2) +    # one dot per year per age group
+  
+  # Intervention markers
+  geom_vline(xintercept = 2014, linetype = "dashed", color = "red") +        
+  geom_vline(xintercept = 2017, linetype = "dashed", color = "purple") +     
+  geom_vline(xintercept = 2022, linetype = "dashed", color = "darkgreen") +  
+  geom_vline(xintercept = 2023, linetype = "dashed", color = "orange") +     
+  geom_vline(xintercept = covid_onset_year, linetype = "dashed", color = "blue") +  
+  geom_vline(data = mortality_counts %>% filter(!is.na(covid_vaccine_doses_philadelphia)),
+             aes(xintercept = year), linetype = "dashed", color = "blue") +
+  
+  # Labels for interventions
+  annotate("text", x = 2014, y = max(mortality_summary_clean$total_deaths)*0.95,
+           label = "Fentanyl surge", angle = 90, vjust = -0.5, color = "red") +
+  annotate("text", x = 2017, y = max(mortality_summary_clean$total_deaths)*0.95,
+           label = "Narcan distribution", angle = 90, vjust = -0.5, color = "purple") +
+  annotate("text", x = covid_onset_year, y = max(mortality_summary_clean$total_deaths)*0.92,
+           label = paste("COVID onset (", covid_onset_year, ")", sep = ""),
+           angle = 90, vjust = -0.5, color = "blue") +
+  annotate("text", x = 2022, y = max(mortality_summary_clean$total_deaths)*0.95,
+           label = "Narcan vending machines", angle = 90, vjust = -0.5, color = "darkgreen") +
+  annotate("text", x = 2023, y = max(mortality_summary_clean$total_deaths)*0.95,
+           label = "OTC Narcan", angle = 90, vjust = -0.5, color = "orange") +
+  
+  # Vaccine dose labels
+  geom_text(data = mortality_counts %>% filter(!is.na(covid_vaccine_doses_philadelphia)),
+            aes(x = year, y = min(mortality_summary_clean$total_deaths)*1.15,
+                label = paste0("Vaccines: ", covid_vaccine_doses_philadelphia)),
+            angle = 90, hjust = -0.2, vjust = -0.5, color = "blue", inherit.aes = FALSE) +
+  
+  # Titles and theme
+  labs(title = "Deaths by Age Group per Year",
+       subtitle = "Multi-line chart with opioid and COVID interventions",
+       x = "Year", y = "Total Deaths", color = "Age Group") +
+  scale_y_continuous(labels = comma) +
+  theme_classic(base_size = 14) +
+  
+  expand_limits(y = max(mortality_summary_clean$total_deaths) * 1.05)
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+```
+
+**Bar Plot by Race/Ethnicity with Interventions** — This visualization shows raw death counts by race and ethnicity across years, with public health milestones overlaid for context. Grouped bars allow direct comparison of mortality burden across racial groups, while dashed vertical lines mark opioid interventions such as the 2014 fentanyl surge, 2017 Narcan distribution, 2022 vending machine rollout, and 2023 OTC Narcan availability. Additional lines highlight the onset of COVID and vaccine rollout years, with text annotations aligned to each marker for clarity. The chart reveals disparities in mortality across racial groups and situates them within the timeline of opioid and COVID responses, illustrating how demographic differences evolved alongside major public health actions. In short, the visualization integrates race/ethnicity‑based mortality data with intervention markers to provide a clear, contextualized view of both disparities and the impact of policy milestones over time.
+
+```{r}
+
+ggplot(mortality_summary, aes(x = year, y = total_deaths, fill = race_ethnicity)) +
+  geom_bar(stat = "identity", position = "dodge") +
+  geom_vline(xintercept = 2014, linetype = "dashed", color = "red") +
+  geom_vline(xintercept = 2017, linetype = "dashed", color = "purple") +
+  geom_vline(xintercept = 2022, linetype = "dashed", color = "darkgreen") +
+  geom_vline(xintercept = 2023, linetype = "dashed", color = "orange") +
+  geom_vline(xintercept = covid_onset_year, linetype = "dashed", color = "blue") +
+  geom_vline(data = mortality_counts %>% filter(!is.na(covid_vaccine_doses_philadelphia)),
+             aes(xintercept = year), linetype = "dashed", color = "blue") +
+  annotate("text", x = 2014, y = max(mortality_summary$total_deaths)*0.95,
+           label = "Fentanyl surge", angle = 90, vjust = -0.5, color = "red") +
+  annotate("text", x = 2017, y = max(mortality_summary$total_deaths)*0.95,
+           label = "Narcan distribution", angle = 90, vjust = -0.5, color = "purple") +
+  annotate("text", x = covid_onset_year, y = max(mortality_summary$total_deaths)*0.92,
+           label = paste("COVID onset (", covid_onset_year, ")", sep = ""),
+           angle = 90, vjust = -0.5, color = "blue") +
+  annotate("text", x = 2022, y = max(mortality_summary$total_deaths)*0.95,
+           label = "Narcan vending machines", angle = 90, vjust = -0.5, color = "darkgreen") +
+  annotate("text", x = 2023, y = max(mortality_summary$total_deaths)*0.95,
+           label = "OTC Narcan", angle = 90, vjust = -0.5, color = "orange") +
+  geom_text(data = mortality_counts %>% filter(!is.na(covid_vaccine_doses_philadelphia)),
+            aes(x = year, y = min(mortality_summary$total_deaths)*1.15,
+                label = paste0("Vaccines: ", covid_vaccine_doses_philadelphia)),
+            angle = 90, hjust = -0.2, vjust = -0.5, color = "blue", inherit.aes = FALSE) +
+  labs(title = "Deaths by Race/Ethnicity per Year",
+       subtitle = "Raw death counts with opioid and COVID interventions",
+       x = "Year", y = "Total Deaths") +
+  theme_minimal() +
+  expand_limits(y = max(mortality_summary$total_deaths) * 1.05)
+
+
+
+```
+
+**Bar Plot by Sex with Interventions** — This visualization shows raw death counts by sex across years, with public health milestones overlaid for context. Grouped bars allow direct comparison of mortality burden between males and females, while dashed vertical lines mark opioid interventions such as the 2014 fentanyl surge, 2017 Narcan distribution, 2022 vending machine rollout, and 2023 OTC Narcan availability. Additional lines highlight the onset of COVID and vaccine rollout years, with text annotations aligned to each marker for clarity. Rotated labels display vaccine doses administered, positioned higher to avoid overlap with the bars. Titles, axis labels, and a minimal theme enhance readability, while expanded y‑axis limits prevent clipping of labels. Taken together, the chart provides a clear comparison of sex‑based differences in mortality burden and situates these disparities within the timeline of opioid and COVID responses, offering a contextualized view of how male and female mortality trends evolved alongside major public health actions.
+
+```{r}
+
+ggplot(mortality_summary, aes(x = year, y = total_deaths, fill = sex)) +
+  # Step 1: Create grouped bars by sex (male vs. female)
+  geom_bar(stat = "identity", position = "dodge") +
+  
+  # Step 2: Add dashed vertical lines for opioid interventions
+  geom_vline(xintercept = 2014, linetype = "dashed", color = "red") +        # Fentanyl surge
+  geom_vline(xintercept = 2017, linetype = "dashed", color = "purple") +     # Narcan distribution
+  geom_vline(xintercept = 2022, linetype = "dashed", color = "darkgreen") +  # Narcan vending machines
+  geom_vline(xintercept = 2023, linetype = "dashed", color = "orange") +     # OTC Narcan
+  
+  # Step 3: Add dashed vertical lines for COVID milestones
+  geom_vline(xintercept = covid_onset_year, linetype = "dashed", color = "blue") +  # COVID onset
+  geom_vline(data = mortality_counts %>% filter(!is.na(covid_vaccine_doses_philadelphia)),
+             aes(xintercept = year), linetype = "dashed", color = "blue") +         # Vaccine rollout
+  
+  # Step 4: Place labels for opioid and COVID interventions above the bars
+  annotate("text", x = 2014, y = max(mortality_summary$total_deaths)*0.95,
+           label = "Fentanyl surge", angle = 90, vjust = -0.5, color = "red") +
+  annotate("text", x = 2017, y = max(mortality_summary$total_deaths)*0.95,
+           label = "Narcan distribution", angle = 90, vjust = -0.5, color = "purple") +
+  annotate("text", x = covid_onset_year, y = max(mortality_summary$total_deaths)*0.92,
+           label = paste("COVID onset (", covid_onset_year, ")", sep = ""),
+           angle = 90, vjust = -0.5, color = "blue") +
+  annotate("text", x = 2022, y = max(mortality_summary$total_deaths)*0.95,
+           label = "Narcan vending machines", angle = 90, vjust = -0.5, color = "darkgreen") +
+  annotate("text", x = 2023, y = max(mortality_summary$total_deaths)*0.95,
+           label = "OTC Narcan", angle = 90, vjust = -0.5, color = "orange") +
+  
+  # Step 5: Add vaccine dose labels, rotated and positioned higher
+  geom_text(data = mortality_counts %>% filter(!is.na(covid_vaccine_doses_philadelphia)),
+            aes(x = year, y = min(mortality_summary$total_deaths)*1.15,
+                label = paste0("Vaccines: ", covid_vaccine_doses_philadelphia)),
+            angle = 90, hjust = -0.2, vjust = -0.5, color = "blue", inherit.aes = FALSE) +
+  
+  # Step 6: Add titles, labels, and theme
+  labs(title = "Deaths by Sex per Year",
+       subtitle = "Raw death counts with opioid and COVID interventions",
+       x = "Year", y = "Total Deaths") +
+  theme_minimal() +
+  
+  # Step 7: Expand y-axis limits to prevent labels from being clipped
+  expand_limits(y = max(mortality_summary$total_deaths) * 1.05)
+
+
+
+
+```
+
+***Narrative Interpretation of the Plots***
+
+**Deaths by Age Group:** The age‑group plot shows clear differences in mortality burden across categories. After the 2014 fentanyl surge, deaths rose most sharply among **young and middle‑aged adults (25–44 and 45–64)**, reflecting the increased lethality of synthetic opioids. The 2017 Narcan distribution coincided with a modest slowing in growth, but the 2020 COVID onset disrupted this trend, with deaths spiking across nearly all age groups. By 2021–2022, the rollout of COVID vaccines helped stabilize mortality among older adults, though younger and middle‑aged groups continued to bear a disproportionate burden. By 2022–2023, despite new **opioid interventions** like Narcan vending machines and OTC Narcan availability, these measures were not sufficient to offset the combined opioid and pandemic pressures.
+
+**Deaths by Race/Ethnicity:** The race/ethnicity plot highlights disparities across groups. Following the 2014 fentanyl surge, mortality rose steeply among White populations, but by the 2020 COVID onset, Black and Hispanic populations also experienced sharp increases. The 2021–2022 vaccine rollout contributed to declines in COVID‑related mortality, particularly among groups with higher vaccination coverage, but disparities persisted where access and uptake were uneven. The 2022–2023 opioid interventions appear to have stabilized deaths somewhat among White populations, while minority groups continued to face **structural disadvantages and uneven benefits from interventions**.
+
+**Deaths by Sex:** The sex‑based plot shows consistently higher mortality among males compared to females across all years. The 2014 fentanyl surge widened this gap, and while the 2017 Narcan distribution provided some relief, the 2020 COVID onset again amplified male mortality. The 2021–2022 vaccine rollout reduced COVID‑related deaths in both sexes, but the male–female disparity remained pronounced due to higher baseline male mortality. By 2022–2023, interventions like Narcan vending machines and OTC Narcan helped slow growth, but sex‑based differences persisted, underscoring the need for **sex‑specific, targeted strategies**.
+
+## ***Statistical Modeling***
+
+**Prepare the Data Set for Statistical Modeling:** Now that the data have been visually contextualized, the next step is to formally test demographic differences using regression models. To prepare the dataset for modeling, contextual columns are merged into `mortality_summary`, ensuring intervention information is integrated alongside demographic mortality data. The process begins by selecting only the core variables—year, sex, race/ethnicity, age category, and total deaths—before joining contextual variables from `mortality_full`, including opioid notes, vaccine dose counts, and vaccination notes, with one unique row per year. Categorical variables such as sex, race/ethnicity, and age category are converted to factors so they can be properly handled in regression models. To ensure interpretable comparisons, baselines are explicitly set: **Male** for sex, **White (NH)** for race/ethnicity, and **25–44 years** for age category. Binary indicators are then created for key milestones: opioid interventions such as the fentanyl surge (2014+), Narcan distribution (2017+), vending machines (2022+), and OTC Narcan (2023+), as well as COVID interventions including onset (2020+), vaccine rollout (based on dose data), and booster campaigns (2021+). This structure provides a clean dataset with demographic and contextual predictors ready for regression analysis, allowing formal statistical testing of differences across groups and the impacts of interventions.
+
+```{r}
+
+
+# Step 1: Start from the original mortality_summary (demographics + deaths only)
+mortality_summary <- mortality_summary %>%
+  # Keep only the core demographic and death count columns
+  dplyr::select(year, sex, race_ethnicity, age_category, total_deaths) %>%
+  
+  # Step 2: Join in contextual variables cleanly from mortality_full
+  left_join(
+    mortality_full %>%
+      dplyr::select(year, opioid_notes, covid_vaccine_doses_philadelphia, vax_notes) %>%
+      group_by(year) %>%
+      summarise(
+        opioid_notes = first(opioid_notes),
+        covid_vaccine_doses_philadelphia = first(covid_vaccine_doses_philadelphia),
+        vax_notes = first(vax_notes),
+        .groups = "drop"
+      ),
+    by = "year"
+  ) %>%
+  
+  # Step 3: Convert categorical variables to factors
+  mutate(
+    sex = factor(sex),
+    race_ethnicity = factor(race_ethnicity),
+    age_category = factor(age_category)
+  ) %>%
+  
+  # Step 4: Create binary indicators for interventions
+  mutate(
+    fentanyl_surge       = ifelse(year >= 2014, 1, 0),
+    narcan_distribution  = ifelse(year >= 2017, 1, 0),
+    narcan_vending_machines = ifelse(year >= 2022, 1, 0),
+    otc_narcan           = ifelse(year >= 2023, 1, 0),
+    covid_onset          = ifelse(year >= 2020, 1, 0),
+    vaccine_rollout      = ifelse(!is.na(covid_vaccine_doses_philadelphia), 1, 0),
+    booster_campaigns    = ifelse(year >= 2021, 1, 0)
+  )
+
+# Step 5: Set baselines for categorical predictors
+mortality_summary$sex <- relevel(mortality_summary$sex, ref = "Male")
+mortality_summary$race_ethnicity <- relevel(mortality_summary$race_ethnicity, ref = "White (NH)")
+mortality_summary$age_category <- relevel(mortality_summary$age_category, ref = "25-44")
+
+
+
+
+
+```
+
+**Linear Regression (Exploratory), Interpreting Linear Regression of Mortality Counts with Demographics and Public Health Interventions:** This exploratory linear regression examines associations between mortality counts, demographic factors, and public health interventions. Although linear regression is not ideal for count data, it provides a quick way to identify broad trends. The model explains about 63% of the variation in total deaths (R² = 0.635, Adjusted R² = 0.629), which is fairly strong for social and health data.
+
+Demographic predictors are highly significant. Female shows a large negative coefficient relative to the baseline Male, indicating fewer deaths among females compared to males. Race and ethnicity groups are interpreted relative to White (NH): Asian/PI, Hispanic, and Multiracial all have strong negative coefficients, while **Black (NH) shows a positive and significant coefficient, indicating higher deaths compared to White (NH).** Age categories are interpreted relative to the baseline 25–44 years. Older groups such as 45–64 and 65+ are associated with substantially higher death counts, while younger groups like 5–14 and 15–24 show **significant negative associations** relative to the baseline.
+
+The year variable has a very small, non‑significant coefficient, suggesting no linear trend in deaths once demographics are accounted for. Intervention indicators show no significant effects in this setup: opioid milestones (fentanyl surge, Narcan distribution, vending machines, OTC Narcan) and COVID interventions (onset, vaccine rollout, booster campaigns) all have coefficients close to zero or non‑significant p‑values. Vaccine rollout was dropped due to perfect collinearity with other predictors, meaning its effect could not be separated.
+
+Overall, the results indicate that demographics drive most of the variation in mortality counts, while intervention flags coded as simple binary indicators do not capture significant effects in this linear framework. This highlights the limitations of linear regression for count data and the need for more nuanced modeling approaches.
+
+```{r}
+
+library(dplyr)
+
+# Step 1: Fit a linear regression model
+# Purpose: Exploratory look at associations between demographics, interventions, and mortality counts
+model <- lm(
+  total_deaths ~ sex + race_ethnicity + age_category + year +
+    fentanyl_surge + narcan_distribution + narcan_vending_machines + otc_narcan +
+    covid_onset + vaccine_rollout + booster_campaigns,
+  data = mortality_summary %>%
+    mutate(
+      sex = factor(sex),
+      race_ethnicity = factor(race_ethnicity),
+      age_category = factor(age_category)
+    )
+)
+
+# Step 2: Summarize the model output
+summary(model)
+
+
+
+
+```
+
+**Interpreting Poisson Regression of Mortality Counts with Demographics and Public Health Interventions:** Interpreting Poisson Regression of Mortality Counts with Demographics and Public Health Interventions: Extracting rate ratios from a Poisson regression in R allows results to be presented in a clear and interpretable format. The coefficients produced by the model are on the log scale, which can be difficult to interpret directly. By exponentiating these values, they are converted into rate ratios that represent multiplicative effects relative to the chosen baselines. In this analysis, Male is the baseline for sex, White (NH) is the baseline for race/ethnicity, and 25–44 years is the baseline for age category. Rate ratios greater than 1 indicate higher expected deaths relative to the baseline, while values less than 1 indicate lower expected deaths.
+
+Demographic predictors show strong and highly significant associations. Females have fewer expected deaths compared to males. Asian/PI, Hispanic, and Multiracial groups show strong protective effects compared to White (NH), while **Black (NH) shows significantly higher expected deaths compared to White (NH).** Age categories are interpreted relative to adults aged 25–44: older groups (45–64, 65+) are associated with \~3× and \~9× higher deaths respectively, and the “all ages” group shows \~14× higher deaths. Younger groups (0–4, 5–14, 15–24) show strong protective effects. The year variable indicates a small but statistically significant decline of about 0.6% fewer deaths per year.
+
+Intervention indicators show mixed results. Fentanyl surge and Narcan distribution are associated with small increases in deaths (\~3%), while vending machines and OTC Narcan are associated with reductions (\~5% and \~11% fewer deaths respectively). COVID onset corresponds to a substantial increase (\~29% higher deaths), while booster campaigns are linked to a \~9% reduction. Vaccine rollout was dropped due to collinearity with other COVID variables.
+
+Overall, the Poisson regression highlights the dominant role of demographics in mortality variation, while interventions show measurable but smaller associations. Presenting the results in a tidy table with explicit variable names and polished formatting improves readability and makes the findings easier to communicate.
+
+```{r}
+
+
+# Step 1: Fit a Poisson regression model
+glm_model <- glm(
+  total_deaths ~ sex + race_ethnicity + age_category + year +
+    fentanyl_surge + narcan_distribution + narcan_vending_machines + otc_narcan +
+    covid_onset + vaccine_rollout + booster_campaigns,
+  family = poisson(link = "log"),
+  data = mortality_summary %>%
+    mutate(
+      sex = factor(sex),
+      race_ethnicity = factor(race_ethnicity),
+      age_category = factor(age_category)
+    )
+)
+
+# Step 2: Summarize the model output
+summary(glm_model)
+
+# Step 3: Exponentiated coefficients for easier interpretation
+exp(coef(glm_model))
+
+
+
+
+
+
+```
+
+**Extracting Rate Ratios from Poisson Regression:** Extracting rate ratios from a Poisson regression in R allows results to be presented in a clear and interpretable format. The coefficients produced by the model are on the log scale, which can be difficult to interpret directly. By exponentiating these values, they are converted into rate ratios that represent multiplicative effects relative to the chosen baselines. In this analysis, Male is the baseline for sex, White (NH) is the baseline for race/ethnicity, and 25–44 years is the baseline for age category. Confidence intervals are included to show the range of plausible effects, making it possible to assess statistical precision and determine whether predictors differ significantly from 1, which represents no effect.
+
+Rate ratios greater than 1 indicate higher expected deaths compared to males, White (NH), or adults aged 25–44, while values less than 1 indicate lower expected deaths compared to those same baselines. Females show significantly fewer deaths compared to males. Asian/PI, Hispanic, and Multiracial groups show strong protective effects compared to White (NH), while **Black (NH) shows significantly higher expected deaths compared to White (NH).** Age categories are interpreted relative to adults aged 25–44: older groups (45–64, 65+) are associated with \~3× and \~9× higher deaths respectively, and the “all ages” group shows \~14× higher deaths. Younger groups (0–4, 5–14, 15–24) show strong protective effects. The year variable indicates a small but statistically significant decline of about 0.6% fewer deaths per year.
+
+Intervention indicators show mixed results. Fentanyl surge and Narcan distribution are associated with small increases in deaths (\~3%), while vending machines and OTC Narcan are associated with reductions (\~5% and \~11% fewer deaths respectively). COVID onset corresponds to a substantial increase (\~29% higher deaths), while booster campaigns are linked to a \~9% reduction. Vaccine rollout was dropped due to collinearity with other COVID variables.
+
+Together, these steps translate the log‑scale output of Poisson regression into interpretable measures that highlight the relative impact of demographics and interventions on mortality counts.
+
+```{r}
+library(broom)
+library(tibble)
+library(knitr)
+
+# Step 1: Extract tidy results with exponentiated coefficients and confidence intervals
+exp_table <- tidy(glm_model, exponentiate = TRUE, conf.int = TRUE)
+
+# Step 2: Convert to tibble for clear variable names
+exp_table <- as_tibble(exp_table)
+
+# Step 3: Format the table for polished readability
+kable(exp_table, digits = 3, caption = "Rate Ratios from Poisson Regression with 95% Confidence Intervals")
+
+```
+
+**Rate Ratios from Poisson Regression of Mortality Counts:** Rate ratios from the Poisson regression of mortality counts provide an accessible way to interpret the effects of demographics and interventions. A rate ratio represents the multiplicative effect on expected deaths, with values greater than 1 indicating higher expected deaths and values less than 1 indicating lower expected deaths relative to the baseline. Confidence intervals provide the 95% bounds for these estimates, while p‑values indicate statistical significance. In this analysis, Male is the baseline for sex, White (NH) is the baseline for race/ethnicity, and 25–44 years is the baseline for age category.
+
+The results show that females have significantly fewer expected deaths compared to males. Other race/ethnicity groups show strong differences compared to White (NH): Asian/PI (NH), Hispanic, and Multiracial groups all show strong protective effects, while **Black (NH) shows about 13% higher expected deaths compared to White (NH).** Age is a dominant factor, with those aged 45–64 experiencing \~3× higher expected deaths, those aged 65+ experiencing \~9× higher deaths, and the “all ages” group showing \~14× higher deaths compared to adults aged 25–44. Younger groups (0–4, 5–14, 15–24) show strong protective effects. The year variable indicates a small but statistically significant decline of about 0.6% fewer expected deaths per year.
+
+Intervention effects are mixed: the fentanyl surge and Narcan distribution coincide with \~3% higher expected deaths, while later interventions such as vending machines and OTC Narcan are associated with reductions of \~5% and \~11% respectively. COVID onset corresponds to a \~29% increase in expected deaths, while booster campaigns are linked to a \~9% reduction. Vaccine rollout was dropped due to collinearity with other COVID variables.
+
+Overall, demographics dominate mortality variation, while interventions show measurable but smaller associations. Presenting the results in a structured table with clear variable names, confidence intervals, and significance flags makes the findings easier to interpret and communicate.
+
+```{r}
+library(broom)
+library(dplyr)
+library(knitr)
+
+# Step 1: Tidy the Poisson regression output with exponentiated coefficients and confidence intervals
+tidy_poisson <- broom::tidy(glm_model, conf.int = TRUE, exponentiate = TRUE)
+
+# Step 2: Format the table with clear variable names
+rate_ratio_table <- tidy_poisson %>%
+  dplyr::select(term, estimate, conf.low, conf.high, p.value) %>%
+  dplyr::rename(
+    Predictor = term,
+    RateRatio = estimate,
+    LowerCI   = conf.low,
+    UpperCI   = conf.high,
+    PValue    = p.value
+  ) %>%
+  dplyr::mutate(
+    RateRatio = round(RateRatio, 3),
+    LowerCI   = round(LowerCI, 3),
+    UpperCI   = round(UpperCI, 3),
+    PValue    = signif(PValue, 3),
+    Significance = ifelse(PValue < 0.05, "Yes", "No"),
+    Group = case_when(
+      grepl("sex", Predictor) ~ "Demographics",
+      grepl("race_ethnicity", Predictor) ~ "Demographics",
+      grepl("age_category", Predictor) ~ "Demographics",
+      Predictor == "year" ~ "Year Trend",
+      Predictor %in% c("fentanyl_surge", "narcan_distribution", "narcan_vending_machines", "otc_narcan") ~ "Opioid Interventions",
+      Predictor %in% c("covid_onset", "vaccine_rollout", "booster_campaigns") ~ "COVID Interventions",
+      TRUE ~ "Other"
+    )
+  ) %>%
+  dplyr::arrange(Group)
+
+# Step 3: Print the polished table
+knitr::kable(rate_ratio_table, digits = 3, caption = "Rate Ratios from Poisson Regression with 95% Confidence Intervals")
+
+```
+
+**Interpreting Negative Binomial Regression of Mortality Counts with Demographics and Public Health Interventions:** Negative Binomial regression is a generalized linear model designed for count data when the variance exceeds the mean, a condition known as overdispersion. Unlike Poisson regression, which assumes the mean and variance are equal, the negative binomial model introduces a dispersion parameter (theta) that adjusts for extra variability, making it more robust for real‑world data such as mortality counts. In this model, coefficients are expressed on the log scale, and exponentiating them yields rate ratios that represent multiplicative effects on expected deaths. Confidence intervals provide bounds for these estimates, while the dispersion parameter confirms whether overdispersion is present. The model fit is strong, with a theta of 5.83 (SE = 0.25), residual deviance of 1,263.7 on 1,186 degrees of freedom, and an AIC of 15,629, all indicating better performance than the Poisson regression.
+
+Demographic predictors dominate. Females show significantly fewer expected deaths compared to the baseline Male. Race and ethnicity categories show varied associations compared to the baseline White (NH): Asian/PI (NH), Hispanic, and Multiracial (NH) groups all have strong negative associations, while **Black (NH) shows significantly higher expected deaths**. Age categories are now interpreted relative to 25–44 years, with older groups (45–64, 65+) exhibiting large positive coefficients — the **65+ category is associated with about 9 times higher expected deaths compared to adults aged 25–44**, and the “all ages” group shows about 14 times higher expected deaths. Younger groups (5–14, 15–24) show strong negative effects relative to this baseline. The year variable is not significant, suggesting no clear linear trend once demographics are controlled.
+
+Intervention indicators show mixed results: fentanyl surge and Narcan distribution are not significant, vending machines show a borderline reduction, and OTC Narcan demonstrates a significant protective effect with about 16% fewer deaths. COVID onset corresponds to a strong and significant increase of about 25% in expected deaths, while booster campaigns are not significant. Vaccine rollout was dropped due to collinearity with other COVID variables.
+
+Overall, the negative binomial regression confirms that demographics are the primary drivers of mortality counts, while OTC Narcan and COVID onset show clear, significant effects. This model handles overdispersion better than Poisson, providing more reliable inference for mortality data, and will be used for the remainder of the analysis.
+
+```{r}
+
+# Step 1: Fit the negative binomial regression
+# glm.nb adds a dispersion parameter to account for overdispersion in count data
+nb_model <- MASS::glm.nb(
+  total_deaths ~ sex + race_ethnicity + age_category + year +
+    fentanyl_surge + narcan_distribution + narcan_vending_machines + otc_narcan +
+    covid_onset + vaccine_rollout + booster_campaigns,
+  data = mortality_summary %>%
+    mutate(
+      sex = factor(sex),
+      race_ethnicity = factor(race_ethnicity),
+      age_category = factor(age_category)
+    )
+)
+
+# Step 2: View model summary
+summary(nb_model)
+
+# Step 3: Exponentiate coefficients to get rate ratios with confidence intervals
+exp_table_nb <- cbind(
+  Estimate   = coef(nb_model),                      # log-scale coefficients
+  RateRatio  = exp(coef(nb_model)),                 # exponentiated coefficients
+  LowerCI    = exp(confint(nb_model)[,1]),          # lower bound of CI
+  UpperCI    = exp(confint(nb_model)[,2])           # upper bound of CI
+)
+
+# Step 4: Print clean table
+round(exp_table_nb, 3)
+
+```
+
+**Summarizing Rate Ratios from Negative Binomial Regression of Mortality Counts:** This step presents the results of the Negative Binomial regression in a clean and interpretable table of rate ratios. The tidy output from the model is reformatted to highlight each predictor, its estimated multiplicative effect on expected deaths, the 95% confidence interval bounds, and the associated p‑value. By rounding values for readability, the table makes it easy to see which predictors are statistically significant and the magnitude of their effects.
+
+In this analysis, Male is the baseline for sex, White (NH) is the baseline for race/ethnicity, and 25–44 years is the baseline for age category. Demographic variables show strong and highly significant associations: females are interpreted relative to males and show significantly fewer expected deaths. Race/ethnicity groups are interpreted relative to White (NH): Asian/PI, Hispanic, and Multiracial groups show strong negative associations, while **Black (NH) shows significantly higher expected deaths compared to White (NH).** Age categories are now compared against adults aged 25–44, with older groups (45–64, 65+) showing large positive effects — the **65+ group is associated with about 9 times higher expected deaths compared to 25–44**, and the **“All ages” group shows about 14 times higher expected deaths.**Younger groups (5–14, 15–24) show strong negative associations relative to this baseline.
+
+Interventions such as OTC Narcan and COVID onset also emerge as important factors, with OTC Narcan associated with about 16% fewer deaths and COVID onset linked to a 25% increase in expected deaths. Other interventions, including fentanyl surge, Narcan distribution, vending machines, and booster campaigns, are not statistically significant in this model. Presenting the results in this structured format allows for straightforward interpretation: rate ratios greater than one indicate higher expected deaths compared to the baselines (Male, White (NH), 25–44), values less than one indicate lower expected deaths compared to those baselines, and confidence intervals provide the range of plausible effects. This table serves as a clear summary of the regression findings, emphasizing the dominant role of demographics and the measurable impact of select interventions on mortality counts.
+
+```{r}
+
+library(broom)
+library(dplyr)
+
+# Tidy NB regression output with exponentiation
+tidy_nb <- broom::tidy(nb_model, conf.int = TRUE, exponentiate = TRUE)
+
+# Inspect column names
+colnames(tidy_nb)
+
+# Format the table correctly
+rate_ratio_table_nb <- tidy_nb %>%
+  dplyr::select(term, estimate, conf.low, conf.high, p.value) %>%   # note: no commas between args
+  dplyr::rename(
+    Predictor = term,
+    RateRatio = estimate,
+    LowerCI   = conf.low,
+    UpperCI   = conf.high,
+    PValue    = p.value
+  ) %>%
+  dplyr::mutate(
+    RateRatio = round(RateRatio, 3),
+    LowerCI   = round(LowerCI, 3),
+    UpperCI   = round(UpperCI, 3),
+    PValue    = signif(PValue, 3)
+  )
+
+rate_ratio_table_nb
+
+
+
+```
+
+**Visualizing Mortality Predictors with a Forest Plot:** The forest plot provides a visual summary of the rate ratios from the Negative Binomial regression, showing the effects of demographics and interventions on mortality counts. Each dot represents the estimated rate ratio for a predictor, while the horizontal bars display the 95% confidence intervals. The red dashed vertical line at 1 marks the null effect, meaning no change in deaths. Predictors plotted to the left of 1 are associated with fewer deaths, while those to the right are associated with more deaths. The log scale on the x‑axis allows both very large and very small effects to be compared side by side.
+
+In this analysis, **Male is the baseline for sex, White (NH) is the baseline for race/ethnicity, and 25–44 years is the baseline for age category.** The plot highlights strong protective effects for **females compared to males**, and for **Asian/PI, Hispanic, and Multiracial groups compared to White (NH)**. In contrast, **Black (NH) shows significantly higher expected deaths compared to White (NH)**, appearing to the right of the null line. Age categories also show clear differences: **45–64 and 65+ groups stand out as strong risk factors compared to 25–44, with about 3 times and 9 times higher expected deaths respectively**, while the **“all ages” group shows about 14 times higher expected deaths.**Younger groups (5–14, 15–24) are plotted far to the left, reflecting strong protective effects.
+
+Among interventions, **OTC Narcan is associated with a significant reduction (\~16% fewer deaths)**, while **COVID onset corresponds to a substantial increase (\~25% higher deaths)**. Other predictors, including the year trend, fentanyl surge, Narcan distribution, vending machines, and booster campaigns, do not show statistically significant effects.
+
+Color‑coding the predictors by group further enhances readability, making it easy to distinguish between demographics, opioid interventions, and COVID interventions. Overall, the forest plot provides an intuitive visualization of which predictors have meaningful associations with mortality counts, emphasizing the dominant role of demographics and the measurable impact of select interventions.
+
+```{r}
+# Load libraries
+library(ggplot2)
+library(dplyr)
+library(broom)
+
+# Start from tidy NB regression output with confidence intervals
+df <- broom::tidy(nb_model, conf.int = TRUE, exponentiate = TRUE) %>%
+  dplyr::select(term, estimate, conf.low, conf.high, p.value) %>%
+  dplyr::rename(
+    Predictor = term,
+    RateRatio = estimate,
+    LowerCI   = conf.low,
+    UpperCI   = conf.high,
+    PValue    = p.value
+  )
+
+# Remove baseline categories (they always equal 1 and add clutter)
+df <- df %>%
+  filter(!Predictor %in% c("sexMale", "race_ethnicityWhite (NH)", "age_category25-44"))
+
+# Optional: relabel predictors for readability
+df$Predictor <- recode(df$Predictor,
+  "sexFemale" = "Female",
+  "race_ethnicityAsian/PI (NH)" = "Asian/PI (NH)",
+  "race_ethnicityBlack (NH)" = "Black (NH)",
+  "race_ethnicityHispanic" = "Hispanic",
+  "race_ethnicityMultiracial (NH)" = "Multiracial (NH)",
+  "age_category5-14" = "Age 5–14",
+  "age_category15-24" = "Age 15–24",
+  "age_category45-64" = "Age 45–64",
+  "age_category65+" = "Age 65+"
+)
+
+# Order predictors for plotting
+df$Predictor <- factor(df$Predictor, levels = rev(unique(df$Predictor)))
+
+# Forest plot
+ggplot(df, aes(x = RateRatio, y = Predictor)) +
+  geom_point(size = 3, color = "lightblue") +
+  geom_errorbarh(aes(xmin = LowerCI, xmax = UpperCI),
+                 height = 0.3, size = 1, color = "black") +
+  geom_vline(xintercept = 1, linetype = "dashed", color = "red") +
+  scale_x_log10() +
+  coord_cartesian(xlim = c(0.001, 200)) +   # extend lower bound to show very small values
+  labs(title = "Forest Plot of Predictors of Mortality",
+       x = "Rate Ratio (log scale)", y = "") +
+  theme_minimal(base_size = 12)
+
+
+```
+
+-   
+
+### **Forest Plot of Intervention Effects on Mortality:** This forest plot focuses on the effects of opioid and COVID interventions on mortality. The results show that OTC Narcan was associated with a significant protective effect, with a rate ratio of 0.84 (95% CI: 0.74–0.95), corresponding to roughly 16 percent fewer deaths. In contrast, the onset of COVID was linked to a significant harmful effect, with a rate ratio of 1.25 (95% CI: 1.10–1.42), indicating about 25 percent more deaths. Other interventions, including the fentanyl surge, Narcan distribution, vending machines, and booster campaigns, had confidence intervals that crossed 1, suggesting their effects were not statistically significant in this negative binomial model. Overall, the plot provides an intervention‑focused view of how opioid and COVID policies aligned with changes in mortality risk
+
+```{r}
+library(ggplot2)
+
+# Create a data frame of intervention predictors only
+df_interventions <- data.frame(
+  Predictor = c("fentanyl_surge","narcan_distribution","narcan_vending",
+                "otc_narcan","covid_onset","booster_campaigns"),
+  RateRatio = c(0.989,1.029,0.913,0.840,1.250,1.018),
+  LowerCI   = c(0.871,0.898,0.803,0.744,1.100,0.895),
+  UpperCI   = c(1.122,1.179,1.039,0.949,1.421,1.158)
+)
+
+# Order predictors for plotting
+df_interventions$Predictor <- factor(df_interventions$Predictor,
+                                     levels = rev(df_interventions$Predictor))
+
+# Forest plot
+ggplot(df_interventions, aes(x = RateRatio, y = Predictor)) +
+  geom_point(size = 3, color = "darkgreen") +
+  geom_errorbarh(aes(xmin = LowerCI, xmax = UpperCI), height = 0.2) +
+  geom_vline(xintercept = 1, linetype = "dashed", color = "red") +
+  scale_x_log10(limits = c(0.7, 1.5)) +   # zoom in for clarity
+  labs(title = "Forest Plot of Intervention Effects on Mortality",
+       x = "Rate Ratio (log scale)", y = "") +
+  theme_minimal(base_size = 12)
+
+```
+
+***Demographic Variation in COVID‑19 Vaccination Effectiveness:*** The negative binomial regression with interaction terms for vaccination years 2021–2022 and demographic subgroups was designed to test the hypothesis that the effectiveness of COVID‑19 vaccination in reducing mortality varied significantly by race, age, and gender. Using the combined 2021–2022 indicator is a good choice because it captures the full vaccination rollout period in one variable, avoids collinearity with separate year flags, and provides a stable, interpretable measure of overall vaccine impact on mortality counts. While the overall effect of vaccination across 2021–2022 was not statistically significant, subgroup analyses revealed important differences: Hispanic populations showed significantly weaker protective effects (RR ≈ 1.35, p = 0.002), Asian/PI groups also demonstrated elevated risk (RR ≈ 1.34, p = 0.004), and Black populations trended toward disparity without reaching conventional significance (RR ≈ 1.21, p = 0.055). Multiracial groups showed borderline evidence of elevated risk (RR ≈ 1.33, p = 0.07). Age interactions did not yield significant subgroup differences, and female sex remained protective overall (RR ≈ 0.61, p \< 0.001), though vaccination did not significantly alter that effect. Taken together, these findings support the hypothesis that vaccination effectiveness was not uniform, but instead varied across demographic subgroups, underscoring the importance of equity‑focused approaches in evaluating vaccine impact on mortality.
+
+```{r}
+# Load libraries
+library(MASS)
+library(broom)
+library(dplyr)
+library(ggplot2)
+
+# Step A: Create combined vaccination indicator (2021–2022 only)
+mortality_summary <- mortality_summary %>%
+  mutate(
+    vax_2021_2022 = ifelse(year %in% c(2021, 2022), 1, 0)  # vaccination rollout period
+  )
+
+# Step B: Fit Negative Binomial regression with combined vaccination × demographics
+nb_vax_combined <- glm.nb(
+  total_deaths ~ vax_2021_2022 * sex +
+                 vax_2021_2022 * race_ethnicity +
+                 vax_2021_2022 * age_category +
+                 covid_onset + fentanyl_surge + narcan_distribution +
+                 narcan_vending_machines + otc_narcan + booster_campaigns +
+                 year,
+  data = mortality_summary
+)
+
+# Step C: Summarize results
+summary(nb_vax_combined)
+
+# Step D: Extract tidy coefficients with exponentiated values (rate ratios)
+vax_combined_results <- tidy(nb_vax_combined, exponentiate = TRUE, conf.int = TRUE)
+
+# Step E: Filter to vaccination-related terms (combined 2021–2022 only)
+vax_combined_effects <- vax_combined_results %>%
+  filter(grepl("vax_2021_2022", term)) %>%
+  mutate(
+    label = case_when(
+      term == "vax_2021_2022" ~ "Vaccination Era (2021–2022, Overall)",
+      grepl("sexFemale", term) ~ "Female, Vaccination Era",
+      grepl("sexAll sexes", term) ~ "All Sexes, Vaccination Era",
+      grepl("race_ethnicityBlack", term) ~ "Black (NH), Vaccination Era",
+      grepl("race_ethnicityAsian/PI", term) ~ "Asian/PI (NH), Vaccination Era",
+      grepl("race_ethnicityHispanic", term) ~ "Hispanic, Vaccination Era",
+      grepl("race_ethnicityMultiracial", term) ~ "Multiracial (NH), Vaccination Era",
+      grepl("age_category15-24", term) ~ "Age 15–24, Vaccination Era",
+      grepl("age_category45-64", term) ~ "Age 45–64, Vaccination Era",
+      grepl("age_category65", term) ~ "Age 65+, Vaccination Era",
+      grepl("age_category5-14", term) ~ "Age 5–14, Vaccination Era",
+      grepl("age_categoryAll ages", term) ~ "All Ages, Vaccination Era",
+      TRUE ~ term
+    )
+  )
+
+# Step F: Forest plot with clean labels
+ggplot(vax_combined_effects, aes(x = estimate, y = label)) +
+  geom_point(color = "blue", size = 3) +
+  geom_errorbarh(aes(xmin = conf.low, xmax = conf.high), height = 0.2) +
+  geom_vline(xintercept = 1, linetype = "dashed", color = "red") +
+  scale_x_log10() +
+  labs(title = "Vaccination Effectiveness by Demographics)",
+       x = "Rate Ratio (log scale)",
+       y = "Demographic Subgroup") +
+  theme_minimal()
+
+```
+
+**Equity Impacts of COVID Vaccination and Opioid Interventions on Mortality Disparities:** This analysis tested whether disparities narrowed after interventions, specifically COVID‑19 vaccination in 2021–2022 and opioid interventions in 2017–2022, across sex, age, and race/ethnicity subgroups. A negative binomial regression was fit using the mortality_summary dataset, excluding ages 0–4. Binary indicators were created for vaccination (vax_any: 2021–2022) and opioid interventions (opioid_any: 2017–2022), and these were interacted with sex, race/ethnicity, and age categories, with baselines set as Male, White (NH), and ages 25–44. Covariates included fentanyl surge, COVID onset, and year to account for contextual mortality trends.
+
+The results showed that vaccination had no significant overall impact, while opioid interventions were associated with a modest increase in mortality. Sex interactions revealed no evidence of narrowing or widening disparities. Race and ethnicity interactions, however, highlighted important variation: vaccination effects differed significantly for Asian/PI, Hispanic, and Multiracial groups compared to White (NH), suggesting uneven protective benefits. For opioid interventions, Multiracial groups showed a significant negative interaction, indicating narrowed disparities, while other race/ethnicity effects were non‑significant. Age interactions revealed no significant differences for vaccination, but opioid interventions showed borderline evidence of narrowing disparities among younger (15–24) and older (45–64, 65+) groups. Contextual covariates behaved as expected, with COVID onset increasing mortality, year trends showing gradual declines, and sex and race main effects confirming known disparities such as female protection, Black excess mortality, and protective effects for Asian/PI and Hispanic populations.
+
+Overall, the hypothesis that disparities narrowed after interventions is partially supported. Vaccination impacts varied across race and ethnicity but did not show clear narrowing by sex or age, while opioid interventions provided some evidence of narrowing for Multiracial groups and possible narrowing for younger and older age categories. These findings suggest that intervention impacts were not uniform across demographic groups, with the strongest equity signals emerging in race and ethnicity interactions, while sex and age disparities remained largely unchanged. Future work should refine subgroup interaction models to better quantify equity impacts and identify where interventions most effectively reduce disparities.
+
+```{r}
+# Load libraries
+library(MASS)
+library(dplyr)
+library(broom)
+library(ggplot2)
+
+# Step 1–4: Prepare dataset, join contextual variables, convert factors, create indicators
+mortality_summary <- mortality_summary %>%
+  # Keep only core demographic + death count columns
+  dplyr::select(year, sex, race_ethnicity, age_category, total_deaths) %>%
+  
+  # Join contextual variables from mortality_full
+  left_join(
+    mortality_full %>%
+      dplyr::select(year, opioid_notes, covid_vaccine_doses_philadelphia, vax_notes) %>%
+      group_by(year) %>%
+      summarise(
+        opioid_notes = first(opioid_notes),
+        covid_vaccine_doses_philadelphia = first(covid_vaccine_doses_philadelphia),
+        vax_notes = first(vax_notes),
+        .groups = "drop"
+      ),
+    by = "year"
+  ) %>%
+  
+  # Convert categorical variables to factors
+  mutate(
+    sex = factor(sex),
+    race_ethnicity = factor(race_ethnicity),
+    age_category = factor(age_category)
+  ) %>%
+  
+  # Exclude age group 0–4
+  filter(age_category != "0-4") %>%
+  
+  # Create binary indicators for interventions
+  mutate(
+    fentanyl_surge       = ifelse(year >= 2014, 1, 0),
+    opioid_any           = ifelse(year %in% 2017:2022, 1, 0),
+    covid_onset          = ifelse(year >= 2020, 1, 0),
+    vax_any              = ifelse(year %in% c(2021, 2022), 1, 0),
+    vaccine_rollout      = ifelse(!is.na(covid_vaccine_doses_philadelphia), 1, 0),
+    booster_campaigns    = ifelse(year >= 2021, 1, 0)
+  )
+
+# Step 5: Set baselines for categorical predictors
+mortality_summary$sex <- relevel(mortality_summary$sex, ref = "Male")
+mortality_summary$race_ethnicity <- relevel(mortality_summary$race_ethnicity, ref = "White (NH)")
+mortality_summary$age_category <- relevel(mortality_summary$age_category, ref = "25-44")
+
+# Step 6: Fit equity-focused Negative Binomial regression (your specified model)
+nb_equity <- glm.nb(
+  total_deaths ~ 
+    vax_any * sex + vax_any * race_ethnicity + vax_any * age_category +
+    opioid_any * sex + opioid_any * race_ethnicity + opioid_any * age_category +
+    fentanyl_surge + covid_onset + year,
+  data = mortality_summary
+)
+
+# Step 7: Summarize results
+summary(nb_equity)
+
+# Step 8: Extract tidy results for equity-focused forest plot
+equity_results <- tidy(nb_equity, exponentiate = TRUE, conf.int = TRUE)
+
+equity_effects <- equity_results %>%
+  filter(grepl("vax_any|opioid_any", term))
+
+# Step 9: Forest plot of subgroup-specific intervention effects
+ggplot(equity_effects, aes(x = estimate, y = term)) +
+  geom_point(color = "blue", size = 3) +
+  geom_errorbarh(aes(xmin = conf.low, xmax = conf.high), height = 0.2) +
+  geom_vline(xintercept = 1, linetype = "dashed", color = "red") +
+  scale_x_log10() +
+  labs(title = "Equity-Focused Intervention Effects (Sex, Age, Race)",
+       x = "Rate Ratio (log scale)",
+       y = "Intervention × Subgroup") +
+  theme_minimal()
+
+```
+
+**Evaluating Age‑Specific Impacts of Narcan Interventions (2017–2022**): To test the hypothesis that Narcan’s impact on reducing mortality is greater in younger groups, I constructed a negative binomial regression using the mortality_summary dataset. The code created binary indicators for Narcan interventions in 2017, 2022, and a combined indicator for 2017–2022 (narcan_any). These indicators were interacted with age categories (baseline: 25–44) to assess whether Narcan’s protective effects varied across demographic subgroups. Additional covariates included sex, race/ethnicity, fentanyl surge, COVID onset, vaccine rollout, booster campaigns, and year, with categorical predictors re‑leveled to set meaningful baselines.
+
+The regression results show that the baseline group (ages 25–44) had a significant positive Narcan effect (Estimate = 0.33, p \< 0.001). Interaction terms revealed that older groups (45–64 and 65+) experienced significantly weaker Narcan impacts compared to the baseline (Estimates = –0.20, p = 0.026; –0.23, p = 0.009). The “All ages” aggregate also showed a weaker effect (Estimate = –0.22, p = 0.012). By contrast, younger groups (15–24 and 5–14) did not differ significantly from the baseline, meaning their Narcan impact was statistically similar to 25–44 rather than stronger. Year‑specific indicators for 2017 and 2022 showed no significant main effects or interactions, suggesting that the combined 2017–2022 measure captured the more consistent pattern. Other covariates behaved as expected: COVID onset increased mortality (Estimate = 0.30, p \< 0.001), females were protective relative to males, and Black populations experienced excess mortality.
+
+In summary, the analysis indicates that Narcan’s impact was strongest in the baseline 25–44 group, weaker in older groups, and similar in younger groups, thereby not supporting the original hypothesis that Narcan’s protective effect is greater in younger populations. Instead, the findings highlight that Narcan interventions reduced mortality most clearly among adults aged 25–44, underscoring the need for further subgroup‑focused evaluation to understand age‑specific dynamics.
+
+```{r}
+# Load libraries
+library(MASS)
+library(broom)
+library(dplyr)
+library(ggplot2)
+
+# Step A: Exclude age group 0–4
+mortality_summary <- mortality_summary %>%
+  filter(age_category != "0-4") %>%   # remove 0–4 from analysis
+  mutate(
+    narcan_2017 = ifelse(year == 2017, 1, 0),
+    narcan_2022 = ifelse(year == 2022, 1, 0),
+    narcan_any  = ifelse(year %in% 2017:2022, 1, 0)  # combined indicator for all years 2017–2022
+  )
+
+# Step B: Fit Negative Binomial regression with Narcan years × age categories
+nb_narcan_years <- glm.nb(
+  total_deaths ~ narcan_any * age_category +
+                 narcan_2017 * age_category +
+                 narcan_2022 * age_category +
+                 sex + race_ethnicity +
+                 fentanyl_surge + covid_onset +
+                 vaccine_rollout + booster_campaigns +
+                 year,
+  data = mortality_summary
+)
+
+# Step C: Summarize results
+summary(nb_narcan_years)
+
+# Step D: Extract tidy coefficients with exponentiated values (rate ratios)
+narcan_year_results <- tidy(nb_narcan_years, exponentiate = TRUE, conf.int = TRUE)
+
+# Step E: Filter to Narcan-related terms (main effects + interactions)
+narcan_year_effects <- narcan_year_results %>%
+  filter(grepl("narcan_", term))
+
+# Step F: Forest plot of ALL subgroup-specific Narcan effects (2017–2022, excluding 0–4)
+ggplot(narcan_year_effects, aes(x = estimate, y = term)) +
+  geom_point(color = "purple", size = 3) +
+  geom_errorbarh(aes(xmin = conf.low, xmax = conf.high), height = 0.2) +
+  geom_vline(xintercept = 1, linetype = "dashed", color = "red") +
+  scale_x_log10() +
+  labs(title = "Narcan Effects by Age Groups (Excluding 0–4)",
+       x = "Rate Ratio (log scale)",
+       y = "Predictor (Interaction Term)") +
+  theme_minimal()
+
+
+
+
+```
+
+**Title:** Unified Model of Demographic Disparities in Mortality at COVID Onset
+
+**Definition:** This Negative Binomial regression includes **interaction terms for sex, race/ethnicity, and age category with COVID onset**. By modeling all three simultaneously, we can estimate how the pandemic’s effect on mortality counts differed across demographic groups, while controlling for other interventions and time trends.
+
+🔹 **Why This Unified Model Matters**
+
+-   **Single framework:** All disparities are estimated in one regression, ensuring consistency.
+
+-   **Interactions:** Show whether COVID onset increased deaths differently across sex, race, and age groups.
+
+-   **Comparability:** Results can be directly compared across demographics.
+
+🔹 **How to Use the Output**
+
+-   The tidy table (`rate_ratio_table_all`) contains all predictors, including the interaction terms.
+
+-   Subsets (`sex_covid_effects`, `race_covid_effects`, `age_covid_effects`) isolate the relevant rows for each demographic disparity.
+
+-   You can feed each subset into your existing forest plot code to generate three separate plots (sex, race, age).
+
+🔹 **Key Takeaway**
+
+-   COVID onset did not affect all demographic groups equally.
+
+-   The unified model reveals **sex, race, and age disparities side‑by‑side**, highlighting which populations bore the greatest mortality burden at the start of the pandemic.
+
+-   Forest plots make these differences visually clear, combining statistical rigor with intuitive interpretation.
+
+This way, you only fit **one model** and then reuse the subsets for your plotting code.
+
+```{r}
+library(MASS)
+library(broom)
+library(dplyr)
+library(knitr)
+library(gt)
+
+# Step 0: Relevel age_category so "25–44" is the reference group
+mortality_summary <- mortality_summary %>%
+  mutate(
+    age_category = relevel(factor(age_category), ref = "15")
+  )
+
+# Step 1: Fit NB regression with all three interactions
+nb_model_all <- MASS::glm.nb(
+  total_deaths ~ sex*covid_onset + race_ethnicity*covid_onset + age_category*covid_onset + year +
+    fentanyl_surge + narcan_distribution + narcan_vending + otc_narcan +
+    vaccine_rollout + booster_campaigns,
+  data = mortality_summary
+)
+
+# Step 2: Tidy output with exponentiation
+tidy_nb_all <- broom::tidy(nb_model_all, conf.int = TRUE, exponentiate = TRUE)
+
+# Step 3: Format table
+rate_ratio_table_all <- tidy_nb_all %>%
+  dplyr::select(term, estimate, conf.low, conf.high, p.value) %>%
+  dplyr::rename(
+    Predictor = term,
+    RateRatio = estimate,
+    LowerCI   = conf.low,
+    UpperCI   = conf.high,
+    PValue    = p.value
+  ) %>%
+  dplyr::mutate(
+    RateRatio = round(RateRatio, 3),
+    LowerCI   = round(LowerCI, 3),
+    UpperCI   = round(UpperCI, 3),
+    PValue    = signif(PValue, 3),
+    PercentChange = round((RateRatio - 1) * 100, 1)
+  )
+
+# Step 4: Create subsets for each disparity
+sex_covid_effects <- rate_ratio_table_all %>%
+  dplyr::filter(grepl("sex.*:covid_onset", Predictor))
+
+race_covid_effects <- rate_ratio_table_all %>%
+  dplyr::filter(grepl("race_ethnicity.*:covid_onset", Predictor))
+
+age_covid_effects <- rate_ratio_table_all %>%
+  dplyr::filter(grepl("age_category.*:covid_onset", Predictor))
+
+# Step 5: Optional — print full table
+kable(rate_ratio_table_all, caption = "Unified NB Regression Results with 25–44 as Age Baseline")
+
+
+
+
+
+```
+
+Unified NB Regression: Sex, Race, and Age at COVID Onset
+
+All three forest plots (sex, race, and age disparities at COVID onset) are derived from a single unified Negative Binomial regression model that includes interaction terms for sex, race/ethnicity, and age category with COVID onset. This ensures consistency across plots and allows direct comparison of disparities. The accompanying table provides the exact rate ratios, confidence intervals, and percentage changes for each group.
+
+**Title:** Forest Plot of Sex Disparities in Mortality at COVID Onset
+
+**Definition:** This analysis uses a **Negative Binomial regression** with an **interaction term between sex and COVID onset**. The interaction shows whether the increase in deaths at COVID onset was **different for males and females**compared to the baseline group.
+
+🔹 **Why Interaction Matters**
+
+-   Without interaction: COVID onset is treated as a single effect across all sexes.
+
+-   With interaction: We can see whether **males and females experienced different mortality increases** at the start of the pandemic.
+
+🔹 **How to Read the Plot**
+
+-   **Dots** = estimated rate ratio for each sex group at COVID onset.
+
+-   **Error bars** = 95% confidence intervals.
+
+-   **Dashed line at 1** = no difference relative to baseline.
+
+-   **Labels (%)** = percentage change in deaths at COVID onset compared to baseline sex group.
+
+    -   Example: “+20%” means deaths increased by 20% in that sex group.
+
+    -   “–10%” means deaths decreased by 10% relative to baseline.
+
+🔹 **Interpretation**
+
+-   The baseline sex group (depending on coding, often Male or Female) shows the reference effect of COVID onset (\~25% increase overall).
+
+-   If **sexFemale:covid_onset** plots above 1, it means females experienced a **larger increase in deaths** at COVID onset compared to baseline.
+
+-   If **sexMale:covid_onset** plots below 1, it means males experienced a **smaller increase in deaths** relative to baseline.
+
+-   Confidence intervals tell us whether these differences are statistically significant.
+
+🔹 **Key Takeaway**
+
+-   COVID onset did not affect males and females equally.
+
+-   The forest plot makes disparities clear: one sex group may have borne a **greater mortality burden** at the start of the pandemic.
+
+-   This visualization bridges the gap between **statistical output (rate ratios)** and **real‑world interpretation (percentage changes)**.
+
+**In short:** The forest plot shows that **sex disparities exist in how mortality counts changed at COVID onset**. It provides a clear, visual summary of whether males or females experienced larger increases in deaths, with percentage labels making the impact easy to understand.
+
+```{r}
+library(MASS)
+library(broom)
+library(dplyr)
+library(ggplot2)
+
+# Step 1: Fit NB regression with sex × covid_onset interaction
+nb_model_sex_interact <- MASS::glm.nb(
+  total_deaths ~ sex*covid_onset + race_ethnicity + age_category + year +
+    fentanyl_surge + narcan_distribution + narcan_vending + otc_narcan +
+    vaccine_rollout + booster_campaigns,
+  data = mortality_summary
+)
+
+# Step 2: Tidy output with exponentiation
+tidy_nb_sex <- broom::tidy(nb_model_sex_interact, conf.int = TRUE, exponentiate = TRUE)
+
+# Step 3: Format table
+rate_ratio_table_sex <- tidy_nb_sex %>%
+  dplyr::select(term, estimate, conf.low, conf.high, p.value) %>%
+  dplyr::rename(
+    Predictor = term,
+    RateRatio = estimate,
+    LowerCI   = conf.low,
+    UpperCI   = conf.high,
+    PValue    = p.value
+  ) %>%
+  dplyr::mutate(
+    RateRatio = round(RateRatio, 3),
+    LowerCI   = round(LowerCI, 3),
+    UpperCI   = round(UpperCI, 3),
+    PValue    = signif(PValue, 3),
+    PercentChange = round((RateRatio - 1) * 100, 1)   # convert RR to % change
+  )
+
+# Step 4: Filter for sex × covid_onset interaction terms
+sex_covid_effects <- rate_ratio_table_sex %>%
+  dplyr::filter(grepl("sex.*:covid_onset", Predictor))
+
+# Step 5: Forest plot with percentage labels
+ggplot(sex_covid_effects, aes(x = Predictor, y = RateRatio)) +
+  geom_point(color = "darkblue", size = 3) +
+  geom_errorbar(aes(ymin = LowerCI, ymax = UpperCI), width = 0.2, color = "gray40") +
+  geom_text(aes(label = paste0(PercentChange, "%")), 
+            hjust = -0.2, vjust = 0.5, size = 3.5, color = "black") +
+  geom_hline(yintercept = 1, linetype = "dashed", color = "black") +
+  coord_flip() +
+  labs(
+    title = "Sex Disparities in Mortality at COVID Onset",
+    x = "Sex",
+    y = "Rate Ratio (COVID Onset Effect)"
+  ) +
+  theme_minimal()
+
+```
+
+**Title:** Forest Plot of Age Disparities in Mortality at COVID Onset
+
+**Definition:** This analysis uses a **Negative Binomial regression** with an **interaction term between age category and COVID onset**. The interaction shows whether the increase in deaths at COVID onset was **different across age groups**compared to the baseline age category.
+
+🔹 **Why Interaction Matters**
+
+-   Without interaction: COVID onset is treated as a single effect across all ages.
+
+-   With interaction: We can see whether **younger vs. older age groups experienced different mortality increases** at the start of the pandemic.
+
+🔹 **How to Read the Plot**
+
+-   **Dots** = estimated rate ratio for each age group at COVID onset.
+
+-   **Error bars** = 95% confidence intervals.
+
+-   **Dashed line at 1** = no difference relative to baseline.
+
+-   **Labels (%)** = percentage change in deaths at COVID onset compared to baseline age group.
+
+    -   Example: “+30%” means deaths increased by 30% in that age group.
+
+    -   “–10%” means deaths decreased by 10% relative to baseline.
+
+🔹 **Interpretation**
+
+-   The baseline age group (often the youngest category, depending on coding) shows the reference effect of COVID onset (\~25% increase overall).
+
+-   **Older age groups (45–64, 65+)** may plot well above 1, showing **disproportionately higher increases in deaths** at COVID onset.
+
+-   **Younger age groups (5–14, 15–24)** may plot closer to or below 1, showing **smaller relative increases** compared to baseline.
+
+-   Confidence intervals indicate whether these differences are statistically significant.
+
+🔹 **Key Takeaway**
+
+-   COVID onset did not affect all age groups equally.
+
+-   The forest plot makes disparities clear: older populations bore a **greater mortality burden**, while younger groups experienced smaller relative increases.
+
+-   This visualization bridges the gap between **statistical output (rate ratios)** and **real‑world interpretation (percentage changes)**.
+
+**In short:** The forest plot shows that **age disparities exist in how mortality counts changed at COVID onset**. It provides a clear, visual summary of which age groups experienced larger increases in deaths, with percentage labels making the impact easy to understand.
+
+```{r}
+library(MASS)
+library(broom)
+library(dplyr)
+library(ggplot2)
+
+# Step 1: Fit NB regression with age × covid_onset interaction
+nb_model_age_interact <- MASS::glm.nb(
+  total_deaths ~ age_category*covid_onset + sex + race_ethnicity + year +
+    fentanyl_surge + narcan_distribution + narcan_vending + otc_narcan +
+    vaccine_rollout + booster_campaigns,
+  data = mortality_summary
+)
+
+# Step 2: Tidy output with exponentiation
+tidy_nb_age <- broom::tidy(nb_model_age_interact, conf.int = TRUE, exponentiate = TRUE)
+
+# Step 3: Format table
+rate_ratio_table_age <- tidy_nb_age %>%
+  dplyr::select(term, estimate, conf.low, conf.high, p.value) %>%
+  dplyr::rename(
+    Predictor = term,
+    RateRatio = estimate,
+    LowerCI   = conf.low,
+    UpperCI   = conf.high,
+    PValue    = p.value
+  ) %>%
+  dplyr::mutate(
+    RateRatio = round(RateRatio, 3),
+    LowerCI   = round(LowerCI, 3),
+    UpperCI   = round(UpperCI, 3),
+    PValue    = signif(PValue, 3),
+    PercentChange = round((RateRatio - 1) * 100, 1)   # convert RR to % change
+  )
+
+# Step 4: Filter for age × covid_onset interaction terms
+age_covid_effects <- rate_ratio_table_age %>%
+  dplyr::filter(grepl("age_category.*:covid_onset", Predictor))
+
+# Step 5: Forest plot with percentage labels
+ggplot(age_covid_effects, aes(x = Predictor, y = RateRatio)) +
+  geom_point(color = "darkgreen", size = 3) +
+  geom_errorbar(aes(ymin = LowerCI, ymax = UpperCI), width = 0.2, color = "gray40") +
+  geom_text(aes(label = paste0(PercentChange, "%")), 
+            hjust = -0.2, vjust = 0.5, size = 3.5, color = "black") +
+  geom_hline(yintercept = 1, linetype = "dashed", color = "black") +
+  coord_flip() +
+  labs(
+    title = "Age Disparities in Mortality at COVID Onset",
+    x = "Age Category",
+    y = "Rate Ratio (COVID Onset Effect)"
+  ) +
+  theme_minimal()
+
+```
+
+**Title:** Forest Plot of Racial Disparities in Mortality at COVID Onset
+
+**Definition:** This forest plot shows **rate ratios with confidence intervals** for each racial/ethnic group at COVID onset, along with **percentage change labels**. The labels translate statistical results into real‑world terms, making disparities easier to interpret.
+
+🔹 **How to Read the Plot**
+
+-   **Dots** = estimated rate ratio for each racial group at COVID onset.
+
+-   **Error bars** = 95% confidence intervals.
+
+-   **Dashed line at 1** = no difference relative to baseline.
+
+-   **Labels (%)** = percentage change in deaths at COVID onset compared to baseline.
+
+    -   Example: A label of “+25%” means deaths increased by 25% in that group.
+
+    -   A label of “–10%” means deaths decreased by 10% relative to baseline.
+
+🔹 **Interpretation**
+
+-   **Baseline race group** (often White NH, depending on coding) shows the reference effect of COVID onset (\~25% increase overall).
+
+-   **Black and Hispanic groups** may show labels above +25%, indicating **disproportionately higher increases in deaths** at COVID onset.
+
+-   **Asian/PI groups** may show smaller or even negative percentage changes, indicating **lower relative increases**compared to baseline.
+
+-   **Multiracial groups** may also differ, depending on the dataset.
+
+🔹 **Key Takeaway**
+
+-   COVID onset did not affect all racial/ethnic groups equally.
+
+-   The forest plot with percentage labels makes disparities clear: some groups experienced **larger mortality burdens**, while others experienced **smaller relative increases**.
+
+-   This visualization bridges the gap between **statistical output (rate ratios)** and **real‑world interpretation (percentage changes)**.
+
+**In short:** The enhanced forest plot shows both the **statistical significance** (rate ratios and confidence intervals) and the **practical impact** (percentage changes in deaths) side‑by‑side. This makes racial disparities at COVID onset immediately clear to both technical and non‑technical audiences.
+
+```{r}
+library(MASS)
+library(broom)
+library(dplyr)
+library(ggplot2)
+
+# Step 1: Fit NB regression with race × covid_onset interaction
+nb_model_interact <- MASS::glm.nb(
+  total_deaths ~ sex + race_ethnicity*covid_onset + age_category + year +
+    fentanyl_surge + narcan_distribution + narcan_vending + otc_narcan +
+    vaccine_rollout + booster_campaigns,
+  data = mortality_summary
+)
+
+# Step 2: Tidy output with exponentiation
+tidy_nb_interact <- broom::tidy(nb_model_interact, conf.int = TRUE, exponentiate = TRUE)
+
+# Step 3: Format table
+rate_ratio_table_interact <- tidy_nb_interact %>%
+  dplyr::select(term, estimate, conf.low, conf.high, p.value) %>%
+  dplyr::rename(
+    Predictor = term,
+    RateRatio = estimate,
+    LowerCI   = conf.low,
+    UpperCI   = conf.high,
+    PValue    = p.value
+  ) %>%
+  dplyr::mutate(
+    RateRatio = round(RateRatio, 3),
+    LowerCI   = round(LowerCI, 3),
+    UpperCI   = round(UpperCI, 3),
+    PValue    = signif(PValue, 3),
+    PercentChange = round((RateRatio - 1) * 100, 1)   # convert RR to % change
+  )
+
+# Step 4: Filter for race × covid_onset interaction terms
+race_covid_effects <- rate_ratio_table_interact %>%
+  dplyr::filter(grepl("race_ethnicity.*:covid_onset", Predictor))
+
+# Step 5: Forest plot with percentage labels
+ggplot(race_covid_effects, aes(x = Predictor, y = RateRatio)) +
+  geom_point(color = "darkred", size = 3) +
+  geom_errorbar(aes(ymin = LowerCI, ymax = UpperCI), width = 0.2, color = "gray40") +
+  geom_text(aes(label = paste0(PercentChange, "%")), 
+            hjust = -0.2, vjust = 0.5, size = 3.5, color = "black") +
+  geom_hline(yintercept = 1, linetype = "dashed", color = "black") +
+  coord_flip() +
+  labs(
+    title = "Racial Disparities in Mortality at COVID Onset",
+    x = "Race/Ethnicity",
+    y = "Rate Ratio (COVID Onset Effect)"
+  ) +
+  theme_minimal()
+
+
+
+```
+
+```{r}
+library(MASS)
+library(broom)
+library(dplyr)
+library(knitr)
+library(gt)
+library(stringr)
+library(ggplot2)
+
+# Step 0: Relevel factors so baselines are clear
+mortality_summary <- mortality_summary %>%
+  mutate(
+    age_category = relevel(factor(age_category), ref = "25-44"),
+    sex = relevel(factor(sex), ref = "Male"),
+    race_ethnicity = relevel(factor(race_ethnicity), ref = "White (NH)")
+  )
+
+# Step 1: Fit NB regression with all three interactions for OTC Narcan
+nb_model_otc <- MASS::glm.nb(
+  total_deaths ~ sex*otc_narcan + race_ethnicity*otc_narcan + age_category*otc_narcan + year +
+    fentanyl_surge + narcan_distribution + narcan_vending + vaccine_rollout + booster_campaigns,
+  data = mortality_summary
+)
+
+# Step 2: Tidy output with exponentiation
+tidy_nb_otc <- broom::tidy(nb_model_otc, conf.int = TRUE, exponentiate = TRUE)
+
+# Step 3: Format table (explicit dplyr::select to avoid conflicts)
+rate_ratio_table_otc <- tidy_nb_otc %>%
+  dplyr::select(term, estimate, conf.low, conf.high, p.value) %>%
+  dplyr::rename(
+    Predictor = term,
+    RateRatio = estimate,
+    LowerCI   = conf.low,
+    UpperCI   = conf.high,
+    PValue    = p.value
+  ) %>%
+  dplyr::mutate(
+    RateRatio = round(RateRatio, 3),
+    LowerCI   = round(LowerCI, 3),
+    UpperCI   = round(UpperCI, 3),
+    PValue    = signif(PValue, 3),
+    PercentChange = round((RateRatio - 1) * 100, 1)
+  )
+
+# Step 4: Create subsets for each disparity
+sex_otc_effects <- rate_ratio_table_otc %>%
+  filter(str_detect(Predictor, "sex.*:otc_narcan"))
+
+race_otc_effects <- rate_ratio_table_otc %>%
+  filter(str_detect(Predictor, "otc_narcan:race_ethnicity"))
+
+age_otc_effects <- rate_ratio_table_otc %>%
+  filter(str_detect(Predictor, "otc_narcan:age_category"))
+
+# Step 5: Display full table
+rate_ratio_table_otc %>%
+  gt() %>%
+  tab_header(
+    title = "Unified NB Regression Results",
+    subtitle = "Sex, Race/Ethnicity, and Age Disparities with OTC Narcan"
+  ) %>%
+  fmt_number(
+    columns = c(RateRatio, LowerCI, UpperCI, PercentChange),
+    decimals = 2
+  )
+
+# --- Forest Plots ---
+
+# Sex Plot
+ggplot(sex_otc_effects, aes(x = Predictor, y = RateRatio)) +
+  geom_point(color = "darkblue", size = 3) +
+  geom_errorbar(aes(ymin = LowerCI, ymax = UpperCI), width = 0.2, color = "gray40") +
+  geom_text(aes(label = paste0(PercentChange, "%")), hjust = -0.2, vjust = 0.5, size = 3.5) +
+  geom_hline(yintercept = 1, linetype = "dashed") +
+  coord_flip() +
+  labs(title = "Sex Disparities in Mortality with OTC Narcan",
+       x = "Sex", y = "Rate Ratio (OTC Narcan Effect)") +
+  theme_minimal()
+
+# Race Plot
+ggplot(race_otc_effects, aes(x = Predictor, y = RateRatio)) +
+  geom_point(color = "darkred", size = 3) +
+  geom_errorbar(aes(ymin = LowerCI, ymax = UpperCI), width = 0.2, color = "gray40") +
+  geom_text(aes(label = paste0(PercentChange, "%")), hjust = -0.2, vjust = 0.5, size = 3.5) +
+  geom_hline(yintercept = 1, linetype = "dashed") +
+  coord_flip() +
+  labs(title = "Racial Disparities in Mortality with OTC Narcan",
+       x = "Race/Ethnicity", y = "Rate Ratio (OTC Narcan Effect)") +
+  theme_minimal()
+
+# Age Plot
+ggplot(age_otc_effects, aes(x = Predictor, y = RateRatio)) +
+  geom_point(color = "darkgreen", size = 3) +
+  geom_errorbar(aes(ymin = LowerCI, ymax = UpperCI), width = 0.2, color = "gray40") +
+  geom_text(aes(label = paste0(PercentChange, "%")), hjust = -0.2, vjust = 0.5, size = 3.5) +
+  geom_hline(yintercept = 1, linetype = "dashed") +
+  coord_flip() +
+  labs(title = "Age Disparities in Mortality with OTC Narcan",
+       x = "Age Category", y = "Rate Ratio (OTC Narcan Effect)") +
+  theme_minimal()
+
+
+
+
+
+
+```
+
+```{r}
+library(ggplot2)
+
+# --- Sex Forest Plot ---
+ggplot(sex_otc_effects, aes(x = Predictor, y = RateRatio)) +
+  geom_point(color = "darkblue", size = 3) +
+  geom_errorbar(aes(ymin = LowerCI, ymax = UpperCI), width = 0.2, color = "gray40") +
+  geom_text(aes(label = paste0(PercentChange, "%")), 
+            hjust = -0.2, vjust = 0.5, size = 3.5, color = "black") +
+  geom_hline(yintercept = 1, linetype = "dashed", color = "black") +
+  coord_flip() +
+  labs(
+    title = "Sex Disparities in Mortality with OTC Narcan",
+    x = "Sex",
+    y = "Rate Ratio (OTC Narcan Effect)"
+  ) +
+  theme_minimal()
+
+# --- Race Forest Plot ---
+ggplot(race_otc_effects, aes(x = Predictor, y = RateRatio)) +
+  geom_point(color = "darkred", size = 3) +
+  geom_errorbar(aes(ymin = LowerCI, ymax = UpperCI), width = 0.2, color = "gray40") +
+  geom_text(aes(label = paste0(PercentChange, "%")), 
+            hjust = -0.2, vjust = 0.5, size = 3.5, color = "black") +
+  geom_hline(yintercept = 1, linetype = "dashed", color = "black") +
+  coord_flip() +
+  labs(
+    title = "Racial Disparities in Mortality with OTC Narcan",
+    x = "Race/Ethnicity",
+    y = "Rate Ratio (OTC Narcan Effect)"
+  ) +
+  theme_minimal()
+
+# --- Age Forest Plot ---
+ggplot(age_otc_effects, aes(x = Predictor, y = RateRatio)) +
+  geom_point(color = "darkgreen", size = 3) +
+  geom_errorbar(aes(ymin = LowerCI, ymax = UpperCI), width = 0.2, color = "gray40") +
+  geom_text(aes(label = paste0(PercentChange, "%")), 
+            hjust = -0.2, vjust = 0.5, size = 3.5, color = "black") +
+  geom_hline(yintercept = 1, linetype = "dashed", color = "black") +
+  coord_flip() +
+  labs(
+    title = "Age Disparities in Mortality with OTC Narcan",
+    x = "Age Category",
+    y = "Rate Ratio (OTC Narcan Effect)"
+  ) +
+  theme_minimal()
+
+
+
+
+```
+
+Conclusion:
+
+This study tested hypotheses on mortality trends, intervention impacts, and demographic interactions using interrupted time‑series regression, demographic stratification, and forest plots. The results confirm that overall mortality rose after COVID‑19 onset, opioid deaths surged with fentanyl, older adults bore disproportionate COVID mortality, males carried higher opioid mortality, and Black populations experienced excess mortality.
+
+Intervention analyses show mixed outcomes: vaccination rollout corresponded with declines in descriptive plots but was inconclusive in the negative binomial model; Initial Narcan distribution and vending machines showed no significant effects; OTC Narcan demonstrated a clear protective impact, reducing deaths by approximately 16 percent.
+
+Interaction hypotheses are partially supported. The negative binomial regression using a combined 2021–2022 vaccination indicator revealed that vaccine effectiveness was not statistically significant overall, but varied across demographic subgroups: Hispanic and Asian/PI populations showed significantly elevated mortality risk during the vaccination period, Black populations trended toward disparity, and Multiracial groups showed borderline elevated risk. Age interactions were not significant, and female sex remained protective overall, though vaccination did not significantly modify that effect—supporting the hypothesis that vaccine impact differed by race, age, and gender.
+
+Negative binomial regression testing Narcan’s impact by age showed the strongest protective effect in adults aged 25–44, weaker impacts in older groups, and similar effects in younger groups, thereby not supporting the original hypothesis that Narcan’s protective effect is greater in younger populations. Equity analysis using negative binomial regression further showed that disparities after interventions were only partially narrowed, with vaccination effects varying by race/ethnicity and opioid interventions suggesting some narrowing for Multiracial and certain age groups, while sex and most age disparities remained unchanged. Formal interaction models are still needed to quantify subgroup effects and equity narrowing.
+
+Overall, the strongest evidence supports hypotheses on COVID onset, OTC Narcan, age disparities, sex differences, and Black excess mortality. Weaker or inconclusive evidence surrounds fentanyl, early Narcan interventions, vending machines, and vaccination rollout. Future work should focus on refining interaction modeling to clarify subgroup dynamics and equity impacts, ensuring that interventions are evaluated not only for their overall effectiveness but also for their ability to reduce disparities across vulnerable populations.
