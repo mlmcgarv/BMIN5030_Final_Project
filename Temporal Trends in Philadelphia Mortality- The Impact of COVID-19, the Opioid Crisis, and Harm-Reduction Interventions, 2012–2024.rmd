@@ -1,0 +1,13 @@
+---
+title: "Read.me: Temporal Trends in Philadelphia Mortality: The Impact of COVID-19, the Opioid Crisis, and Harm-Reduction Interventions, 2012–2024"
+author: "Michael Mcgarvey"
+date: "2025-12-10"
+output: html_document
+---
+
+This project investigates how Philadelphia’s mortality patterns have been shaped by two overlapping public health emergencies: the COVID-19 pandemic and the opioid crisis. Using cause-specific mortality data from 2012–2024, contextual metrics on COVID-19 pandemic onset, vaccination data, and the Introduction of fentanyl into the opioid supply and naloxone distribution, the study quantifies excess deaths. It evaluates the impact of these events and interventions across demographic groups.
+```{r}
+    usethis::use_readme_rmd()
+
+
+# This project investigates how Philadelphia’s mortality patterns have been shaped by two overlapping public health emergencies: the COVID-19 pandemic and the opioid crisis. Using cause-specific mortality data from 2012–2024, contextual metrics on COVID-19 pandemic onset, vaccination data, and the Introduction of fentanyl into the opioid supply and naloxone distribution, the study quantifies excess deaths. It evaluates the impact of these events and interventions across demographic groups.
