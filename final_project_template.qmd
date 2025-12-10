@@ -61,6 +61,7 @@ After setting up the environment, we imported the raw mortality dataset (*Vital_
 ```{r}
 
 # Load required packages
+suppressPackageStartupMessages({
 
 library(tidyverse)     # Core toolkit: dplyr for wrangling, ggplot2 for visualization
 library(janitor)       # clean_names() for standardized, consistent column names
@@ -76,7 +77,7 @@ library(ggplot2)       # Explicitly loaded for forest plots (part of tidyverse, 
 library(patchwork)     # Combines multiple ggplot2 plots into a single layout
 library(scales)        # for comma formatting
 library(plotly)        # Plotly enables interactive visualizations in R
-
+})
 
 select <- dplyr::select
 
